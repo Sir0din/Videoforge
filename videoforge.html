@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Forge - Compress &amp; Convert, Right in Your Browser</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<style>
+  :root{
+    --bg:#0a0b0d;
+    --bg2:#0f1114;
+    --panel:rgba(255,255,255,0.035);
+    --panel-strong:rgba(255,255,255,0.055);
+    --border:rgba(255,255,255,0.09);
+    --border-soft:rgba(255,255,255,0.05);
+    --text:#eae8e3;
+    --text-dim:#9a9ca3;
+    --text-dimmer:#6b6d74;
+    --accent:#ff7a45;
+    --accent-soft:rgba(255,122,69,0.14);
+    --accent2:#48e2c2;
+    --accent2-soft:rgba(72,226,194,0.14);
+    --danger:#ff5470;
+    --danger-soft:rgba(255,84,112,0.14);
+    --warn:#ffc857;
+    --radius:16px;
+    --radius-sm:10px;
+    --shadow:0 20px 60px -20px rgba(0,0,0,0.6);
+    font-size:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 600px at 12% -10%, rgba(255,122,69,0.10), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(72,226,194,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent-soft);color:var(--text);}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:8px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  .glass{
+    background:var(--panel);
+    border:1px solid var(--border);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border-radius:var(--radius);
+  }
+
+  /* ---------- top engine bar ---------- */
+  #engineBar{
+    position:fixed; top:0; left:0; right:0; height:3px; z-index:60;
+    background:transparent; pointer-events:none;
+  }
+  #engineBarFill{
+    height:100%; width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width .25s ease;
+    box-shadow:0 0 12px rgba(255,122,69,0.6);
+  }
+  #engineToast{
+    position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-8px);
+    padding:8px 16px; border-radius:999px; font-size:12.5px; color:var(--text-dim);
+    z-index:61; opacity:0; transition:opacity .3s ease, transform .3s ease;
+    display:flex; align-items:center; gap:8px;
+  }
+  #engineToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.4s infinite;flex:none;}
+  .dot.ready{background:var(--accent2);animation:none;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+  /* ---------- header ---------- */
+  header{
+    max-width:1100px; margin:0 auto; padding:34px 24px 10px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .mark{
+    width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(145deg,var(--accent),#c94f1f);
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+    box-shadow:0 8px 20px -6px rgba(255,122,69,0.55);
+  }
+  .brand h1{font-size:16.5px;font-weight:650;margin:0;letter-spacing:.2px;}
+  .brand p{margin:1px 0 0;font-size:12px;color:var(--text-dimmer);}
+  .status-pill{
+    display:flex;align-items:center;gap:7px;
+    padding:7px 12px;border-radius:999px;font-size:12px;color:var(--text-dim);
+  }
+
+  main{max-width:1100px;margin:0 auto;padding:18px 24px 90px;}
+
+  /* ---------- dropzone ---------- */
+  #dropzone{
+    padding:56px 24px; text-align:center; cursor:pointer;
+    transition:border-color .2s ease, background .2s ease, transform .15s ease;
+    position:relative; overflow:hidden;
+  }
+  #dropzone.compact{padding:20px 24px;}
+  #dropzone:hover{border-color:rgba(255,122,69,0.35);}
+  #dropzone.drag{border-color:var(--accent); background:var(--accent-soft); transform:scale(1.005);}
+  #dropzone .glyph{
+    width:64px;height:64px;margin:0 auto 18px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;font-size:28px;
+    background:linear-gradient(160deg, rgba(255,122,69,0.18), rgba(72,226,194,0.10));
+    border:1px solid var(--border-soft);
+  }
+  #dropzone.compact .glyph{width:40px;height:40px;font-size:18px;margin:0;border-radius:12px;}
+  #dropzone h2{font-size:19px;margin:0 0 6px;font-weight:600;}
+  #dropzone p{margin:0;color:var(--text-dim);font-size:13.5px;}
+  #dropzone .row{display:flex;align-items:center;gap:16px;justify-content:center;}
+  #dropzone.compact .row{justify-content:flex-start;}
+  #dropzone .txt{text-align:left;}
+  #dropzone .btn-inline{margin-top:14px;}
+  #dropzone.compact .btn-inline{margin:0 0 0 auto;}
+  .formats{margin-top:14px;font-size:11.5px;color:var(--text-dimmer);letter-spacing:.3px;}
+
+  input[type=file]{display:none;}
+
+  .btn{
+    appearance:none;border:1px solid var(--border);background:var(--panel-strong);
+    color:var(--text);padding:9px 15px;border-radius:10px;font-size:13px;font-weight:560;
+    cursor:pointer;transition:transform .12s ease, background .15s ease, border-color .15s ease;
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .btn:hover{transform:translateY(-1px);border-color:rgba(255,255,255,0.22);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+  .btn-accent{
+    background:linear-gradient(145deg,var(--accent),#e0632f);border:none;color:#1a0d05;font-weight:700;
+    box-shadow:0 8px 22px -8px rgba(255,122,69,0.6);
+  }
+  .btn-accent:hover{box-shadow:0 10px 26px -6px rgba(255,122,69,0.75);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);}
+  .btn-sm{padding:6px 11px;font-size:12px;border-radius:8px;}
+  .btn-danger-ghost{background:transparent;border:1px solid rgba(255,84,112,0.35);color:#ffb3c0;}
+
+  /* ---------- queue ---------- */
+  #queue{margin-top:20px;display:flex;flex-direction:column;gap:14px;}
+  #queueHead{display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px;}
+  #queueHead h3{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-dimmer);font-weight:650;margin:0;}
+  #queueHead .actions{display:flex;gap:8px;}
+
+  .card{
+    padding:18px 20px 20px;animation:rise .35s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .card-file{display:flex;align-items:center;gap:12px;min-width:0;}
+  .file-icon{
+    width:42px;height:42px;border-radius:11px;flex:none;
+    background:linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
+    border:1px solid var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:17px;
+  }
+  .file-meta{min-width:0;}
+  .file-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+  .file-sub{font-size:11.5px;color:var(--text-dimmer);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .badge{
+    padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:650;letter-spacing:.02em;
+  }
+  .badge-queued{background:rgba(255,255,255,0.08);color:var(--text-dim);}
+  .badge-working{background:var(--accent-soft);color:var(--accent);}
+  .badge-done{background:var(--accent2-soft);color:var(--accent2);}
+  .badge-error{background:var(--danger-soft);color:#ff8fa3;}
+  .badge-warn{background:rgba(255,200,87,0.14);color:var(--warn);}
+
+  .card-actions{display:flex;gap:8px;align-items:center;flex:none;}
+
+  .warn-banner{
+    margin-top:12px;padding:9px 12px;border-radius:10px;font-size:12px;
+    background:rgba(255,200,87,0.08);border:1px solid rgba(255,200,87,0.25);color:#ffdf9e;
+    display:flex;gap:8px;align-items:flex-start;
+  }
+  .error-banner{
+    margin-top:12px;padding:9px 12px;border-radius:10px;font-size:12px;
+    background:var(--danger-soft);border:1px solid rgba(255,84,112,0.3);color:#ffb3c0;
+  }
+
+  /* preset chips */
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
+  .chip{
+    padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:580;cursor:pointer;
+    border:1px solid var(--border);background:var(--panel);color:var(--text-dim);
+    transition:all .15s ease;user-select:none;
+  }
+  .chip:hover{border-color:rgba(255,255,255,0.25);color:var(--text);}
+  .chip.active{
+    background:linear-gradient(145deg,var(--accent-soft),rgba(255,122,69,0.06));
+    border-color:rgba(255,122,69,0.55);color:var(--text);
+    box-shadow:inset 0 0 0 1px rgba(255,122,69,0.15);
+  }
+
+  /* advanced */
+  .adv-toggle{
+    margin-top:14px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dimmer);
+    cursor:pointer;width:fit-content;
+  }
+  .adv-toggle svg{transition:transform .2s ease;}
+  .adv-toggle.open svg{transform:rotate(90deg);}
+  .adv-panel{
+    max-height:0;overflow:hidden;transition:max-height .28s ease;
+  }
+  .adv-panel.open{max-height:420px;}
+  .adv-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;
+    padding:16px 2px 4px;
+  }
+  .field label{display:block;font-size:11px;color:var(--text-dimmer);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;}
+  select, .seg{
+    width:100%;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.04);
+    border:1px solid var(--border);color:var(--text);font-size:12.5px;
+  }
+  select:focus, .seg:focus, input:focus-visible, .chip:focus-visible, .btn:focus-visible{
+    outline:2px solid rgba(255,122,69,0.6); outline-offset:1px;
+  }
+  .seg{display:flex;padding:3px;gap:3px;}
+  .seg button{
+    flex:1;border:none;background:transparent;color:var(--text-dim);padding:6px 4px;border-radius:6px;
+    font-size:12px;cursor:pointer;
+  }
+  .seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:650;}
+  .crf-row{grid-column:1/-1;}
+  .crf-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-dimmer);margin-top:5px;}
+  input[type=range]{
+    width:100%;height:4px;border-radius:99px;-webkit-appearance:none;background:rgba(255,255,255,0.1);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--accent);border:2px solid #1a0d05;cursor:pointer;margin-top:-5.5px;
+    box-shadow:0 2px 8px rgba(255,122,69,0.5);
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:99px;}
+
+  /* progress */
+  .progress-wrap{margin-top:16px;}
+  .progress-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--text-dim);margin-bottom:7px;}
+  .progress-top .stage{color:var(--text);font-weight:600;}
+  .track{height:7px;border-radius:99px;background:rgba(255,255,255,0.07);overflow:hidden;position:relative;}
+  .fill{
+    height:100%;width:0%;border-radius:99px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width .2s ease;position:relative;
+  }
+  .fill::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
+    width:40px;animation:shine 1.3s linear infinite;
+  }
+  @keyframes shine{0%{transform:translateX(-40px);}100%{transform:translateX(220px);}}
+
+  .size-compare{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;}
+  .size-pill{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.05);color:var(--text-dim);}
+  .size-pill.after{color:var(--accent2);background:var(--accent2-soft);font-weight:650;}
+  .size-arrow{color:var(--text-dimmer);}
+  .size-reduction{margin-left:auto;font-weight:700;color:var(--accent2);font-size:12.5px;}
+
+  .result-row{margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .result-row video{max-width:230px;border-radius:10px;border:1px solid var(--border);display:block;}
+
+  #footNote{
+    margin-top:46px;text-align:center;color:var(--text-dimmer);font-size:11.5px;line-height:1.7;
+    padding-top:20px;border-top:1px solid var(--border-soft);
+  }
+  #footNote b{color:var(--text-dim);}
+
+  /* toasts */
+  #toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:70;max-width:320px;}
+  .toast{
+    padding:12px 14px;border-radius:12px;font-size:12.5px;
+    animation:toastIn .25s ease both;
+  }
+  .toast.error{border-color:rgba(255,84,112,0.35);}
+  @keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .empty-hint{text-align:center;color:var(--text-dimmer);font-size:12.5px;padding:30px 0 6px;}
+
+  @media (max-width:640px){
+    .file-name{max-width:160px;}
+    header{padding:24px 16px 6px;}
+    main{padding:14px 16px 70px;}
+    .result-row video{max-width:100%;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001s !important; transition-duration:.001s !important;}
+  }
+</style>
+</head>
+<body>
+
+<div id="engineBar"><div id="engineBarFill"></div></div>
+<div id="engineToast"><span class="dot" id="engineDot"></span><span id="engineToastText">Warming up compression engine…</span></div>
+
+<header>
+  <div class="brand">
+    <div class="mark">🎬</div>
+    <div>
+      <h1>Video Forge</h1>
+      <p>Compress &amp; convert video — entirely in your browser</p>
+    </div>
+  </div>
+  <div class="status-pill glass" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Loading engine…</span></div>
+</header>
+
+<main>
+
+  <div id="dropzone" class="glass">
+    <div class="row">
+      <div class="glyph">📥</div>
+      <div class="txt">
+        <h2 id="dzTitle">Drop video files here</h2>
+        <p id="dzSub">or click to browse — MP4, MOV, WebM, MKV, AVI, M4V</p>
+      </div>
+      <button class="btn btn-accent btn-inline" id="browseBtn" type="button">Choose Files</button>
+    </div>
+    <div class="formats" id="formatsNote">Everything runs locally on your machine — nothing is uploaded.</div>
+  </div>
+  <input type="file" id="fileInput" accept="video/*" multiple>
+
+  <div id="queueHead" style="display:none;">
+    <h3>Queue</h3>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" id="compressAllBtn" type="button">▶ Compress All</button>
+      <button class="btn btn-ghost btn-sm" id="downloadAllBtn" type="button" disabled>⬇ Download All (ZIP)</button>
+    </div>
+  </div>
+
+  <div id="queue"></div>
+
+  <div id="footNote">
+    <div><b>How it works:</b> Video Forge runs a real build of FFmpeg compiled to WebAssembly, entirely on your device. Nothing is uploaded anywhere.</div>
+    <div style="margin-top:4px;">Encoding runs on CPU via WebAssembly - browsers don't yet expose GPU video encoding to page scripts, so presets are tuned around the fastest software encoder settings that still hold quality.
+      Made with love by 0din
+    </div>
+  </div>
+
+</main>
+
+<div id="toasts"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script type="module">
+import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
+import { fetchFile } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
+
+/* ============================================================
+   CONSTANTS & STATE
+   ============================================================ */
+const CORE_BASE = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm";
+const MAX_SAFE_SIZE = 500 * 1024 * 1024; // 500MB soft warning threshold
+const SUPPORTED_EXT = ["mp4","mov","webm","mkv","avi","m4v","ogv","ogg","flv","wmv","3gp"];
+
+const PRESETS = {
+  discord: { key:"discord", label:"🚀 Discord", mode:"target-size", targetMB:8,   resolution:"720p",  fps:"30",       codec:"h264", audioMode:"compress", audioBitrate:96,  mono:false },
+  twitter: { key:"twitter", label:"🐦 X / Twitter", mode:"target-size", targetMB:25,  resolution:"1080p", fps:"30",     codec:"h264", audioMode:"keep",     audioBitrate:128, mono:false },
+  twitch:  { key:"twitch",  label:"🎮 Twitch Clip", mode:"crf", crf:20, resolution:"1080p", fps:"original", codec:"h264", audioMode:"keep", audioBitrate:160, mono:false },
+  tiktok:  { key:"tiktok",  label:"📱 TikTok", mode:"crf", crf:23, vertical:true, width:1080, height:1920, fps:"30", codec:"h264", audioMode:"keep", audioBitrate:128, mono:false },
+  shorts:  { key:"shorts",  label:"🎥 YT Shorts", mode:"fixed-bitrate", targetKbps:6000, vertical:true, width:1080, height:1920, fps:"30", codec:"h264", audioMode:"keep", audioBitrate:128, mono:false },
+  ultra:   { key:"ultra",   label:"💾 Ultra Compression", mode:"crf", crf:33, resolution:"480p", fps:"24", codec:"h265", audioMode:"compress", audioBitrate:64, mono:true },
+};
+const PRESET_ORDER = ["discord","twitter","twitch","tiktok","shorts","ultra"];
+
+const CRF_LABELS = [
+  {v:16, t:"Near-lossless"},
+  {v:20, t:"High quality"},
+  {v:23, t:"Balanced"},
+  {v:28, t:"Compressed"},
+  {v:35, t:"Aggressive"},
+  {v:45, t:"Max compression"},
+];
+
+let ffmpeg = null;
+let ffmpegReady = false;
+let ffmpegLoadPromise = null;
+let currentJobId = null;   // id of the queue item currently being encoded
+let isProcessing = false;
+
+const items = new Map(); // id -> item state
+let seq = 0;
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const $ = (sel, root=document) => root.querySelector(sel);
+const dropzone = $("#dropzone");
+const fileInput = $("#fileInput");
+const browseBtn = $("#browseBtn");
+const queueEl = $("#queue");
+const queueHead = $("#queueHead");
+const compressAllBtn = $("#compressAllBtn");
+const downloadAllBtn = $("#downloadAllBtn");
+const statusDot = $("#statusDot");
+const statusText = $("#statusText");
+const engineBarFill = $("#engineBarFill");
+const engineToast = $("#engineToast");
+const engineDot = $("#engineDot");
+const engineToastText = $("#engineToastText");
+const toasts = $("#toasts");
+
+/* ============================================================
+   TOASTS
+   ============================================================ */
+function toast(msg, type="info"){
+  const el = document.createElement("div");
+  el.className = "toast glass" + (type === "error" ? " error" : "");
+  el.textContent = msg;
+  toasts.appendChild(el);
+  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; el.style.transition="all .3s ease"; setTimeout(()=>el.remove(),320); }, 4200);
+}
+
+/* ============================================================
+   ENGINE LOADING (lazy + progressive, with real byte progress)
+   ============================================================ */
+async function fetchWithProgress(url, mime, onProgress){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("Network error fetching " + url);
+  const total = Number(res.headers.get("Content-Length")) || 0;
+  const reader = res.body.getReader();
+  const chunks = [];
+  let received = 0;
+  while(true){
+    const { done, value } = await reader.read();
+    if(done) break;
+    chunks.push(value);
+    received += value.length;
+    if(total) onProgress(received/total);
+  }
+  const blob = new Blob(chunks, { type: mime });
+  return URL.createObjectURL(blob);
+}
+
+function setEngineStatus(state, label){
+  statusText.textContent = label;
+  statusDot.className = "dot" + (state === "ready" ? " ready" : "");
+}
+
+function initEngine(){
+  if(ffmpegLoadPromise) return ffmpegLoadPromise;
+  setEngineStatus("loading", "Loading engine…");
+  engineToast.classList.add("show");
+
+  ffmpegLoadPromise = (async () => {
+    ffmpeg = new FFmpeg();
+    ffmpeg.on("log", ({ message }) => { /* quiet by default */ });
+    ffmpeg.on("progress", ({ progress }) => {
+      if(currentJobId == null) return;
+      const p = Math.max(0, Math.min(1, progress || 0));
+      updateJobProgress(currentJobId, p);
+    });
+
+    try{
+      let coreP = 0, wasmP = 0;
+      const updateOverall = () => {
+        const pct = Math.round(((coreP + wasmP) / 2) * 100);
+        engineBarFill.style.width = pct + "%";
+        engineToastText.textContent = `Warming up compression engine… ${pct}%`;
+      };
+      const [coreURL, wasmURL] = await Promise.all([
+        fetchWithProgress(`${CORE_BASE}/ffmpeg-core.js`, "text/javascript", p => { coreP = p; updateOverall(); }),
+        fetchWithProgress(`${CORE_BASE}/ffmpeg-core.wasm`, "application/wasm", p => { wasmP = p; updateOverall(); }),
+      ]);
+      await ffmpeg.load({ coreURL, wasmURL });
+      ffmpegReady = true;
+      setEngineStatus("ready", "Engine ready");
+      engineDot.classList.add("ready");
+      engineToastText.textContent = "Engine ready";
+      engineBarFill.style.width = "100%";
+      setTimeout(()=>{ engineToast.classList.remove("show"); engineBarFill.style.width = "0%"; }, 1400);
+    }catch(err){
+      console.error(err);
+      setEngineStatus("error", "Engine failed to load");
+      engineToastText.textContent = "Couldn't load the engine — check your connection and reload.";
+      toast("Failed to load the compression engine. Check your internet connection and reload the page.", "error");
+      ffmpegLoadPromise = null; // allow retry
+      throw err;
+    }
+  })();
+
+  return ffmpegLoadPromise;
+}
+
+// Warm the engine in the background as soon as the browser is idle,
+// so it's typically ready before the user finishes picking a preset.
+if("requestIdleCallback" in window){
+  requestIdleCallback(() => initEngine().catch(()=>{}), { timeout: 3000 });
+}else{
+  setTimeout(() => initEngine().catch(()=>{}), 600);
+}
+
+/* ============================================================
+   FILE INTAKE
+   ============================================================ */
+["dragenter","dragover"].forEach(evt => dropzone.addEventListener(evt, e => {
+  e.preventDefault(); dropzone.classList.add("drag");
+}));
+["dragleave","drop"].forEach(evt => dropzone.addEventListener(evt, e => {
+  e.preventDefault(); dropzone.classList.remove("drag");
+}));
+dropzone.addEventListener("drop", e => {
+  const files = [...(e.dataTransfer?.files || [])];
+  if(files.length) handleFiles(files);
+});
+dropzone.addEventListener("click", (e) => {
+  if(e.target === browseBtn) return;
+  fileInput.click();
+});
+browseBtn.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", () => {
+  if(fileInput.files.length) handleFiles([...fileInput.files]);
+  fileInput.value = "";
+});
+
+function isSupported(file){
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  return SUPPORTED_EXT.includes(ext) || file.type.startsWith("video/");
+}
+
+function getDuration(file){
+  return new Promise(resolve => {
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    const url = URL.createObjectURL(file);
+    v.src = url;
+    const done = (d) => { URL.revokeObjectURL(url); resolve(d); };
+    v.onloadedmetadata = () => done(isFinite(v.duration) && v.duration > 0 ? v.duration : 0);
+    v.onerror = () => done(0);
+    setTimeout(()=>done(0), 8000);
+  });
+}
+
+async function handleFiles(fileList){
+  for(const file of fileList){
+    if(!isSupported(file)){
+      toast(`"${file.name}" doesn't look like a supported video format.`, "error");
+      continue;
+    }
+    const id = "f" + (++seq);
+    const item = {
+      id, file, name: file.name, size: file.size,
+      status: "queued", // queued | working | done | error
+      stage: "", progress: 0,
+      presetKey: null,
+      duration: 0,
+      settings: {
+        resolution: "original", fps: "original", codec: "h264",
+        crf: 23, audioMode: "keep", audioBitrate: 128, mono:false,
+        vertical:false, width:1080, height:1920, mode:"crf",
+      },
+      advOpen: false,
+      outputBlob: null,
+      outputSize: 0,
+      outputName: "",
+      error: "",
+      startedAt: 0,
+    };
+    items.set(id, item);
+    renderCard(item);
+    getDuration(file).then(d => { item.duration = d; });
+  }
+  queueHead.style.display = items.size ? "flex" : "none";
+  dropzone.classList.toggle("compact", items.size > 0);
+  $("#dzTitle").textContent = items.size ? "Drop more files" : "Drop video files here";
+  refreshDownloadAllState();
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function fmtSize(bytes){
+  if(!bytes && bytes !== 0) return "—";
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + " KB";
+  return (bytes/(1024*1024)).toFixed(bytes < 100*1024*1024 ? 1 : 0) + " MB";
+}
+function fmtTime(sec){
+  if(!isFinite(sec) || sec < 0) return "--:--";
+  sec = Math.round(sec);
+  const m = Math.floor(sec/60), s = sec%60;
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+function crfLabelFor(v){
+  let best = CRF_LABELS[0];
+  for(const l of CRF_LABELS) if(v >= l.v) best = l;
+  return best.t;
+}
+
+function cardHTML(item){
+  const ext = (item.name.split(".").pop()||"").toUpperCase();
+  return `
+    <div class="card-top">
+      <div class="card-file">
+        <div class="file-icon">🎞️</div>
+        <div class="file-meta">
+          <div class="file-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+          <div class="file-sub">
+            <span>${ext}</span>
+            <span>${fmtSize(item.size)}</span>
+            <span class="badge ${badgeClass(item.status)}" data-role="badge">${badgeLabel(item)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-ghost btn-sm" data-act="copy" type="button">Copy settings</button>
+        <button class="btn btn-accent btn-sm" data-act="compress" type="button">▶ Compress</button>
+        <button class="btn btn-danger-ghost btn-sm" data-act="remove" type="button">✕</button>
+      </div>
+    </div>
+
+    <div data-role="warnbox"></div>
+
+    <div class="presets" data-role="presets">
+      ${PRESET_ORDER.map(k => `<div class="chip" data-preset="${k}">${PRESETS[k].label}</div>`).join("")}
+    </div>
+
+    <div class="adv-toggle" data-act="toggleAdv">
+      <svg width="9" height="9" viewBox="0 0 9 9"><polygon points="0,0 9,4.5 0,9" fill="currentColor"/></svg>
+      <span>Advanced controls</span>
+    </div>
+    <div class="adv-panel" data-role="advpanel">
+      <div class="adv-grid">
+        <div class="field">
+          <label>Resolution</label>
+          <select data-set="resolution">
+            <option value="original">Original</option>
+            <option value="1080p">1080p</option>
+            <option value="720p">720p</option>
+            <option value="480p">480p</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Frame rate</label>
+          <select data-set="fps">
+            <option value="original">Original</option>
+            <option value="60">60 fps</option>
+            <option value="30">30 fps</option>
+            <option value="24">24 fps</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Codec</label>
+          <div class="seg" data-seg="codec">
+            <button data-val="h264" type="button">H.264</button>
+            <button data-val="h265" type="button">H.265</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Audio</label>
+          <select data-set="audioMode">
+            <option value="keep">Keep</option>
+            <option value="compress">Compress</option>
+            <option value="remove">Remove</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Audio bitrate</label>
+          <select data-set="audioBitrate">
+            <option value="160">160 kbps</option>
+            <option value="128">128 kbps</option>
+            <option value="96">96 kbps</option>
+            <option value="64">64 kbps</option>
+            <option value="32">32 kbps</option>
+          </select>
+        </div>
+        <div class="field crf-row">
+          <label>Quality (CRF) — <span data-role="crfval">23</span> · <span data-role="crftxt">Balanced</span></label>
+          <input type="range" min="0" max="51" value="23" data-set="crf">
+          <div class="crf-labels"><span>0 lossless</span><span>23 balanced</span><span>51 tiny</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-wrap" data-role="progresswrap" style="display:none;">
+      <div class="progress-top">
+        <span class="stage" data-role="stage">Encoding</span>
+        <span data-role="pct">0%</span>
+      </div>
+      <div class="track"><div class="fill" data-role="fill" style="width:0%"></div></div>
+      <div class="progress-top" style="margin-top:6px;">
+        <span data-role="eta">ETA —</span>
+        <span data-role="livesize"></span>
+      </div>
+    </div>
+
+    <div data-role="result"></div>
+  `;
+}
+
+function badgeClass(status){
+  return { queued:"badge-queued", working:"badge-working", done:"badge-done", error:"badge-error" }[status] || "badge-queued";
+}
+function badgeLabel(item){
+  return { queued:"Queued", working: item.stage || "Working", done:"Done", error:"Error" }[item.status] || "Queued";
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function renderCard(item){
+  const el = document.createElement("div");
+  el.className = "card glass";
+  el.id = "card-" + item.id;
+  el.innerHTML = cardHTML(item);
+  queueEl.appendChild(el);
+  wireCard(item, el);
+  syncAdvFields(item, el);
+
+  if(item.size > MAX_SAFE_SIZE){
+    $("[data-role=warnbox]", el).innerHTML = `<div class="warn-banner">⚠️ This file is ${fmtSize(item.size)} — large files can be slow or hit browser memory limits. Lowering resolution first is recommended.</div>`;
+  }
+}
+
+function syncAdvFields(item, el){
+  el.querySelector('[data-set=resolution]').value = item.settings.resolution;
+  el.querySelector('[data-set=fps]').value = item.settings.fps;
+  el.querySelector('[data-set=audioMode]').value = item.settings.audioMode;
+  el.querySelector('[data-set=audioBitrate]').value = String(item.settings.audioBitrate);
+  el.querySelectorAll('[data-seg=codec] button').forEach(b => b.classList.toggle("on", b.dataset.val === item.settings.codec));
+  el.querySelector('[data-set=crf]').value = item.settings.crf;
+  el.querySelector('[data-role=crfval]').textContent = item.settings.crf;
+  el.querySelector('[data-role=crftxt]').textContent = crfLabelFor(item.settings.crf);
+  el.querySelectorAll('.chip').forEach(c => c.classList.toggle("active", c.dataset.preset === item.presetKey));
+  el.querySelector('[data-set=audioBitrate]').disabled = item.settings.audioMode === "remove";
+}
+
+function wireCard(item, el){
+  el.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => applyPreset(item, chip.dataset.preset, el));
+  });
+
+  el.querySelector('[data-act=toggleAdv]').addEventListener("click", (e) => {
+    item.advOpen = !item.advOpen;
+    e.currentTarget.classList.toggle("open", item.advOpen);
+    el.querySelector('[data-role=advpanel]').classList.toggle("open", item.advOpen);
+  });
+
+  el.querySelector('[data-set=resolution]').addEventListener("change", e => {
+    item.settings.resolution = e.target.value; item.settings.vertical = false; item.presetKey = null; markManual(item, el);
+  });
+  el.querySelector('[data-set=fps]').addEventListener("change", e => {
+    item.settings.fps = e.target.value; item.presetKey = null; markManual(item, el);
+  });
+  el.querySelectorAll('[data-seg=codec] button').forEach(b => {
+    b.addEventListener("click", () => {
+      item.settings.codec = b.dataset.val; item.presetKey = null;
+      el.querySelectorAll('[data-seg=codec] button').forEach(x => x.classList.toggle("on", x===b));
+    });
+  });
+  el.querySelector('[data-set=audioMode]').addEventListener("change", e => {
+    item.settings.audioMode = e.target.value; item.presetKey = null;
+    el.querySelector('[data-set=audioBitrate]').disabled = e.target.value === "remove";
+  });
+  el.querySelector('[data-set=audioBitrate]').addEventListener("change", e => {
+    item.settings.audioBitrate = Number(e.target.value); item.presetKey = null;
+  });
+  el.querySelector('[data-set=crf]').addEventListener("input", e => {
+    item.settings.crf = Number(e.target.value);
+    item.settings.mode = "crf";
+    item.presetKey = null;
+    el.querySelector('[data-role=crfval]').textContent = item.settings.crf;
+    el.querySelector('[data-role=crftxt]').textContent = crfLabelFor(item.settings.crf);
+    el.querySelectorAll('.chip').forEach(c => c.classList.remove("active"));
+  });
+
+  el.querySelector('[data-act=compress]').addEventListener("click", () => enqueueJob(item.id));
+  el.querySelector('[data-act=remove]').addEventListener("click", () => removeItem(item.id));
+  el.querySelector('[data-act=copy]').addEventListener("click", () => copySettings(item));
+}
+
+function markManual(item, el){
+  el.querySelectorAll('.chip').forEach(c => c.classList.remove("active"));
+}
+
+function applyPreset(item, key, el){
+  const p = PRESETS[key];
+  item.presetKey = key;
+  item.settings = {
+    ...item.settings,
+    resolution: p.resolution || "original",
+    fps: p.fps || "original",
+    codec: p.codec,
+    audioMode: p.audioMode,
+    audioBitrate: p.audioBitrate,
+    mono: !!p.mono,
+    vertical: !!p.vertical,
+    width: p.width || 1080,
+    height: p.height || 1920,
+    mode: p.mode,
+    crf: p.crf || item.settings.crf,
+    targetMB: p.targetMB,
+    targetKbps: p.targetKbps,
+  };
+  syncAdvFields(item, el);
+}
+
+function copySettings(item){
+  const data = { preset: item.presetKey, ...item.settings };
+  const text = JSON.stringify(data, null, 2);
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast("Settings copied to clipboard."));
+  }else{
+    toast("Clipboard isn't available in this browser.", "error");
+  }
+}
+
+function removeItem(id){
+  const item = items.get(id);
+  if(!item) return;
+  if(item.status === "working"){ toast("Can't remove a file that's currently compressing.", "error"); return; }
+  items.delete(id);
+  $("#card-"+id)?.remove();
+  queueHead.style.display = items.size ? "flex" : "none";
+  dropzone.classList.toggle("compact", items.size > 0);
+  refreshDownloadAllState();
+}
+
+/* ============================================================
+   ENCODING PIPELINE
+   ============================================================ */
+const jobQueue = [];
+
+function enqueueJob(id){
+  const item = items.get(id);
+  if(!item || item.status === "working") return;
+  item.status = "queued"; item.progress = 0; item.error = "";
+  updateBadge(item);
+  jobQueue.push(id);
+  pumpQueue();
+}
+
+compressAllBtn.addEventListener("click", () => {
+  for(const [id, item] of items){
+    if(item.status !== "working" && item.status !== "done") enqueueJob(id);
+  }
+});
+
+async function pumpQueue(){
+  if(isProcessing) return;
+  const id = jobQueue.shift();
+  if(!id) return;
+  const item = items.get(id);
+  if(!item){ pumpQueue(); return; }
+
+  isProcessing = true;
+  currentJobId = id;
+  item.status = "working";
+  item.startedAt = performance.now();
+  updateBadge(item);
+  setStage(item, "Preparing");
+
+  try{
+    setStage(item, "Loading engine");
+    showProgress(item, true);
+    await initEngine();
+
+    const inputName = `in_${item.id}.${(item.name.split(".").pop()||"mp4")}`;
+    const outputName = `out_${item.id}.mp4`;
+
+    setStage(item, "Reading file");
+    updateJobProgress(item.id, 0.02);
+    const data = await fetchFile(item.file);
+    await ffmpeg.writeFile(inputName, data);
+
+    const args = buildArgs(item, inputName, outputName);
+
+    setStage(item, "Encoding");
+    await ffmpeg.exec(args);
+
+    setStage(item, "Finalizing");
+    const out = await ffmpeg.readFile(outputName);
+    const blob = new Blob([out.buffer], { type: "video/mp4" });
+
+    item.outputBlob = blob;
+    item.outputSize = blob.size;
+    item.outputName = buildOutputName(item);
+    item.status = "done";
+    updateJobProgress(item.id, 1);
+    renderResult(item);
+    toast(`"${item.name}" compressed — ${fmtSize(item.size)} → ${fmtSize(item.outputSize)}.`);
+
+    try{ await ffmpeg.deleteFile(inputName); await ffmpeg.deleteFile(outputName); }catch(_e){}
+  }catch(err){
+    console.error(err);
+    item.status = "error";
+    item.error = friendlyError(err);
+    renderError(item);
+    toast(`Failed to compress "${item.name}".`, "error");
+  }finally{
+    updateBadge(item);
+    showProgress(item, false);
+    isProcessing = false;
+    currentJobId = null;
+    refreshDownloadAllState();
+    pumpQueue();
+  }
+}
+
+function friendlyError(err){
+  const msg = String(err?.message || err || "");
+  if(/memory|out of memory|allocat/i.test(msg)) return "Ran out of memory while encoding. Try a lower resolution or a smaller file.";
+  if(/network|fetch/i.test(msg)) return "A network error interrupted processing. Check your connection and try again.";
+  return "Something went wrong while encoding this file. Try different settings or a different file.";
+}
+
+/* ---- ffmpeg argument builder ---- */
+function computeBitrateKbps(durationSec, targetMB, audioKbps){
+  if(!durationSec || durationSec <= 0) return null;
+  const totalKbits = targetMB * 8192 * 0.94; // safety margin
+  const totalKbps = totalKbits / durationSec;
+  return Math.max(120, Math.floor(totalKbps - audioKbps));
+}
+
+function buildArgs(item, inputName, outputName){
+  const s = item.settings;
+  const args = ["-i", inputName];
+  const vf = [];
+
+  if(s.vertical){
+    vf.push(`scale=${s.width}:${s.height}:force_original_aspect_ratio=decrease`);
+    vf.push(`pad=${s.width}:${s.height}:(ow-iw)/2:(oh-ih)/2:color=black`);
+  }else if(s.resolution !== "original"){
+    const h = { "1080p":1080, "720p":720, "480p":480 }[s.resolution];
+    vf.push(`scale=-2:${h}`);
+  }
+  if(s.fps !== "original") vf.push(`fps=${s.fps}`);
+  if(vf.length) args.push("-vf", vf.join(","));
+
+  args.push("-c:v", s.codec === "h265" ? "libx265" : "libx264");
+
+  let mode = s.mode;
+  let videoKbps = null;
+  if(mode === "target-size"){
+    videoKbps = computeBitrateKbps(item.duration, s.targetMB, s.audioMode === "remove" ? 0 : s.audioBitrate);
+    if(videoKbps == null) mode = "crf"; // fallback if duration unknown
+  }else if(mode === "fixed-bitrate"){
+    videoKbps = s.targetKbps;
+  }
+
+  if(mode === "target-size" || mode === "fixed-bitrate"){
+    args.push("-b:v", `${videoKbps}k`, "-maxrate", `${Math.round(videoKbps*1.3)}k`, "-bufsize", `${videoKbps*2}k`);
+  }else{
+    args.push("-crf", String(s.crf));
+  }
+
+  args.push("-preset", s.codec === "h265" ? "fast" : "veryfast");
+  if(s.codec === "h265") args.push("-tag:v", "hvc1");
+
+  if(s.audioMode === "remove"){
+    args.push("-an");
+  }else{
+    args.push("-c:a", "aac", "-b:a", `${s.audioBitrate}k`);
+    if(s.mono) args.push("-ac", "1");
+  }
+
+  args.push("-movflags", "+faststart", "-map_metadata", "-1", "-pix_fmt", "yuv420p", outputName);
+  return args;
+}
+
+function buildOutputName(item){
+  const base = item.name.replace(/\.[^.]+$/, "");
+  const preset = item.presetKey || "custom";
+  const ts = new Date().toISOString().replace(/[-:T.Z]/g,"").slice(0,14);
+  return `${base}_${preset}_${ts}.mp4`;
+}
+
+/* ============================================================
+   UI UPDATES
+   ============================================================ */
+function updateBadge(item){
+  const el = $("#card-"+item.id); if(!el) return;
+  const b = el.querySelector('[data-role=badge]');
+  b.className = "badge " + badgeClass(item.status);
+  b.textContent = badgeLabel(item);
+}
+
+function setStage(item, stage){
+  item.stage = stage;
+  updateBadge(item);
+  const el = $("#card-"+item.id); if(!el) return;
+  const s = el.querySelector('[data-role=stage]');
+  if(s) s.textContent = stage;
+}
+
+function showProgress(item, show){
+  const el = $("#card-"+item.id); if(!el) return;
+  el.querySelector('[data-role=progresswrap]').style.display = show ? "block" : "none";
+}
+
+function updateJobProgress(id, fraction){
+  const item = items.get(id); if(!item) return;
+  item.progress = fraction;
+  const el = $("#card-"+id); if(!el) return;
+  const pct = Math.round(fraction*100);
+  el.querySelector('[data-role=fill]').style.width = pct + "%";
+  el.querySelector('[data-role=pct]').textContent = pct + "%";
+
+  const elapsed = (performance.now() - item.startedAt) / 1000;
+  if(fraction > 0.03){
+    const eta = elapsed / fraction * (1 - fraction);
+    el.querySelector('[data-role=eta]').textContent = "ETA " + fmtTime(eta);
+  }
+
+  const s = item.settings;
+  let estKbps = s.mode === "crf" ? null : (s.mode === "fixed-bitrate" ? s.targetKbps : computeBitrateKbps(item.duration, s.targetMB, s.audioBitrate));
+  if(estKbps && item.duration){
+    const estBytes = (estKbps*1000/8) * item.duration;
+    el.querySelector('[data-role=livesize]').textContent = "Target ≈ " + fmtSize(estBytes);
+  }
+}
+
+function renderResult(item){
+  const el = $("#card-"+item.id); if(!el) return;
+  const url = URL.createObjectURL(item.outputBlob);
+  const reduction = item.size > 0 ? Math.round((1 - item.outputSize/item.size) * 100) : 0;
+  el.querySelector('[data-role=result]').innerHTML = `
+    <div class="size-compare">
+      <span class="size-pill">${fmtSize(item.size)}</span>
+      <span class="size-arrow">→</span>
+      <span class="size-pill after">${fmtSize(item.outputSize)}</span>
+      <span class="size-reduction">${reduction >= 0 ? "−"+reduction+"%" : "+"+Math.abs(reduction)+"%"}</span>
+    </div>
+    <div class="result-row">
+      <video src="${url}" controls preload="metadata"></video>
+      <a class="btn btn-accent btn-sm" href="${url}" download="${item.outputName}">⬇ Download</a>
+    </div>
+  `;
+  refreshDownloadAllState();
+}
+
+function renderError(item){
+  const el = $("#card-"+item.id); if(!el) return;
+  el.querySelector('[data-role=result]').innerHTML = `<div class="error-banner">⚠️ ${escapeHtml(item.error)}</div>`;
+}
+
+function refreshDownloadAllState(){
+  const doneCount = [...items.values()].filter(i => i.status === "done").length;
+  downloadAllBtn.disabled = doneCount === 0;
+  downloadAllBtn.textContent = doneCount > 1 ? `⬇ Download All (ZIP) · ${doneCount}` : "⬇ Download All (ZIP)";
+}
+
+downloadAllBtn.addEventListener("click", async () => {
+  const done = [...items.values()].filter(i => i.status === "done");
+  if(!done.length) return;
+  if(done.length === 1){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(done[0].outputBlob);
+    a.download = done[0].outputName;
+    a.click();
+    return;
+  }
+  if(typeof JSZip === "undefined"){ toast("ZIP library unavailable — downloading files individually.", "error");
+    done.forEach(i => { const a=document.createElement("a"); a.href=URL.createObjectURL(i.outputBlob); a.download=i.outputName; a.click(); });
+    return;
+  }
+  downloadAllBtn.disabled = true;
+  const originalText = downloadAllBtn.textContent;
+  downloadAllBtn.textContent = "Zipping…";
+  try{
+    const zip = new JSZip();
+    done.forEach(i => zip.file(i.outputName, i.outputBlob));
+    const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions:{level:6} });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `video_forge_export_${Date.now()}.zip`;
+    a.click();
+  }catch(err){
+    console.error(err);
+    toast("Couldn't build the ZIP file.", "error");
+  }finally{
+    downloadAllBtn.disabled = false;
+    downloadAllBtn.textContent = originalText;
+  }
+});
+</script>
+</body>
+</html>
