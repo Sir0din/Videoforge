@@ -3,682 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Forge — Compress &amp; Convert, Right in Your Browser</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<title>Video Forge — Shrink your clips for Discord, Twitch &amp; TikTok</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0b0d;
-    --bg2:#0f1114;
-    --panel:rgba(255,255,255,0.035);
-    --panel-strong:rgba(255,255,255,0.055);
-    --border:rgba(255,255,255,0.09);
-    --border-soft:rgba(255,255,255,0.05);
-    --text:#eae8e3;
-    --text-dim:#9a9ca3;
-    --text-dimmer:#6b6d74;
-    --accent:#ff7a45;
-    --accent-soft:rgba(255,122,69,0.14);
-    --accent2:#48e2c2;
-    --accent2-soft:rgba(72,226,194,0.14);
-    --danger:#ff5470;
-    --danger-soft:rgba(255,84,112,0.14);
-    --warn:#ffc857;
+    --void:#0a0b0f;
+    --void-2:#101219;
+    --panel:rgba(255,255,255,.045);
+    --panel-strong:rgba(255,255,255,.07);
+    --border:rgba(255,255,255,.09);
+    --border-hi:rgba(255,255,255,.18);
+    --ember:#ff7a45;
+    --ember-hot:#ffb347;
+    --ember-dim:#c9531f;
+    --cyan:#5eead4;
+    --text:#f5f3ef;
+    --muted:#9a9ba5;
+    --muted-2:#6c6d78;
+    --danger:#ff5c5c;
+    --success:#4ade80;
     --radius:16px;
     --radius-sm:10px;
-    --shadow:0 20px 60px -20px rgba(0,0,0,0.6);
-    font-size:16px;
+    --font-display:'Rajdhani',sans-serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(1100px 600px at 12% -10%, rgba(255,122,69,0.10), transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, rgba(72,226,194,0.08), transparent 55%),
-      var(--bg);
+      radial-gradient(1100px 700px at 15% -10%, rgba(255,122,69,.09), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(94,234,212,.06), transparent 55%),
+      var(--void);
     color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    font-family:var(--font-body);
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
-  ::selection{background:var(--accent-soft);color:var(--text);}
-  ::-webkit-scrollbar{width:10px;height:10px;}
-  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:8px;}
-  ::-webkit-scrollbar-track{background:transparent;}
+  ::selection{background:rgba(255,122,69,.35);}
+  :focus-visible{outline:2px solid var(--cyan); outline-offset:2px; border-radius:6px;}
+  a{color:var(--cyan);}
 
-  a{color:inherit;}
-  button{font-family:inherit;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px;}
 
-  .glass{
+  /* ---------- Header ---------- */
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:linear-gradient(155deg, rgba(255,122,69,.22), rgba(255,122,69,.02));
+    border:1px solid var(--border-hi);
+    box-shadow:0 0 26px rgba(255,122,69,.18) inset, 0 4px 18px rgba(0,0,0,.35);
+  }
+  .brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:.3px;margin:0;
+    background:linear-gradient(90deg,#fff, #ffd8b8 60%, var(--ember));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .brand .tag{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .status-pill{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--muted);
+    border:1px solid var(--border);padding:6px 12px;border-radius:999px;background:var(--panel);
+    display:flex;align-items:center;gap:8px;
+  }
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted-2);}
+  .status-dot.ready{background:var(--success);box-shadow:0 0 8px var(--success);}
+  .status-dot.busy{background:var(--ember);box-shadow:0 0 8px var(--ember);animation:pulse 1.1s ease-in-out infinite;}
+
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  section.panel{
     background:var(--panel);
     border:1px solid var(--border);
-    backdrop-filter:blur(18px) saturate(140%);
-    -webkit-backdrop-filter:blur(18px) saturate(140%);
     border-radius:var(--radius);
+    padding:22px;
+    margin-bottom:22px;
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
   }
+  h2.section-title{
+    font-family:var(--font-display);font-size:14px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin:0 0 14px;display:flex;align-items:center;gap:8px;
+  }
+  h2.section-title .n{color:var(--ember);}
 
-  /* ---------- top engine bar ---------- */
-  #engineBar{
-    position:fixed; top:0; left:0; right:0; height:3px; z-index:60;
-    background:transparent; pointer-events:none;
-  }
-  #engineBarFill{
-    height:100%; width:0%;
-    background:linear-gradient(90deg,var(--accent),var(--accent2));
-    transition:width .25s ease;
-    box-shadow:0 0 12px rgba(255,122,69,0.6);
-  }
-  #engineToast{
-    position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-8px);
-    padding:8px 16px; border-radius:999px; font-size:12.5px; color:var(--text-dim);
-    z-index:61; opacity:0; transition:opacity .3s ease, transform .3s ease;
-    display:flex; align-items:center; gap:8px;
-  }
-  #engineToast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1.4s infinite;flex:none;}
-  .dot.ready{background:var(--accent2);animation:none;}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
-
-  /* ---------- header ---------- */
-  header{
-    max-width:1100px; margin:0 auto; padding:34px 24px 10px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-  }
-  .brand{display:flex; align-items:center; gap:12px;}
-  .brand .mark{
-    width:38px;height:38px;border-radius:11px;
-    background:linear-gradient(145deg,var(--accent),#c94f1f);
-    display:flex;align-items:center;justify-content:center;font-size:19px;
-    box-shadow:0 8px 20px -6px rgba(255,122,69,0.55);
-  }
-  .brand h1{font-size:16.5px;font-weight:650;margin:0;letter-spacing:.2px;}
-  .brand p{margin:1px 0 0;font-size:12px;color:var(--text-dimmer);}
-  .status-pill{
-    display:flex;align-items:center;gap:7px;
-    padding:7px 12px;border-radius:999px;font-size:12px;color:var(--text-dim);
-  }
-
-  main{max-width:1100px;margin:0 auto;padding:18px 24px 90px;}
-
-  /* ---------- dropzone ---------- */
+  /* ---------- Drop zone ---------- */
   #dropzone{
-    padding:56px 24px; text-align:center; cursor:pointer;
-    transition:border-color .2s ease, background .2s ease, transform .15s ease;
-    position:relative; overflow:hidden;
+    border:1.5px dashed var(--border-hi);
+    border-radius:var(--radius);
+    padding:44px 24px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .18s ease, background .18s ease, transform .15s ease;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
   }
-  #dropzone.compact{padding:20px 24px;}
-  #dropzone:hover{border-color:rgba(255,122,69,0.35);}
-  #dropzone.drag{border-color:var(--accent); background:var(--accent-soft); transform:scale(1.005);}
-  #dropzone .glyph{
-    width:64px;height:64px;margin:0 auto 18px;border-radius:18px;
-    display:flex;align-items:center;justify-content:center;font-size:28px;
-    background:linear-gradient(160deg, rgba(255,122,69,0.18), rgba(72,226,194,0.10));
-    border:1px solid var(--border-soft);
-  }
-  #dropzone.compact .glyph{width:40px;height:40px;font-size:18px;margin:0;border-radius:12px;}
-  #dropzone h2{font-size:19px;margin:0 0 6px;font-weight:600;}
-  #dropzone p{margin:0;color:var(--text-dim);font-size:13.5px;}
-  #dropzone .row{display:flex;align-items:center;gap:16px;justify-content:center;}
-  #dropzone.compact .row{justify-content:flex-start;}
-  #dropzone .txt{text-align:left;}
-  #dropzone .btn-inline{margin-top:14px;}
-  #dropzone.compact .btn-inline{margin:0 0 0 auto;}
-  .formats{margin-top:14px;font-size:11.5px;color:var(--text-dimmer);letter-spacing:.3px;}
+  #dropzone:hover{border-color:rgba(255,122,69,.5); background:rgba(255,122,69,.04);}
+  #dropzone.dragover{border-color:var(--ember); background:rgba(255,122,69,.09); transform:scale(1.005);}
+  #dropzone .flame{font-size:38px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 14px rgba(255,122,69,.45));}
+  #dropzone .primary{font-family:var(--font-display);font-size:19px;font-weight:600;margin-bottom:4px;}
+  #dropzone .secondary{font-size:13px;color:var(--muted);}
+  #fileInput{display:none;}
 
-  input[type=file]{display:none;}
+  /* ---------- Presets ---------- */
+  .preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:720px){.preset-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:460px){.preset-grid{grid-template-columns:1fr;}}
+  .preset-card{
+    text-align:left;border:1px solid var(--border);background:var(--panel-strong);
+    border-radius:var(--radius-sm);padding:14px;cursor:pointer;color:var(--text);
+    font-family:var(--font-body);transition:border-color .15s, transform .12s, box-shadow .15s;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .preset-card:hover{transform:translateY(-2px);border-color:var(--border-hi);}
+  .preset-card.active{
+    border-color:var(--ember);
+    box-shadow:0 0 0 1px var(--ember), 0 8px 24px rgba(255,122,69,.15);
+    background:linear-gradient(160deg, rgba(255,122,69,.13), rgba(255,122,69,.02));
+  }
+  .preset-card .icon{font-size:22px;}
+  .preset-card .title{font-family:var(--font-display);font-weight:600;font-size:16px;}
+  .preset-card .desc{font-size:12px;color:var(--muted);line-height:1.4;}
+  .preset-card .target{font-family:var(--font-mono);font-size:11px;color:var(--cyan);margin-top:2px;}
 
-  .btn{
-    appearance:none;border:1px solid var(--border);background:var(--panel-strong);
-    color:var(--text);padding:9px 15px;border-radius:10px;font-size:13px;font-weight:560;
-    cursor:pointer;transition:transform .12s ease, background .15s ease, border-color .15s ease;
-    display:inline-flex;align-items:center;gap:7px;
-  }
-  .btn:hover{transform:translateY(-1px);border-color:rgba(255,255,255,0.22);}
-  .btn:active{transform:translateY(0);}
-  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-  .btn-accent{
-    background:linear-gradient(145deg,var(--accent),#e0632f);border:none;color:#1a0d05;font-weight:700;
-    box-shadow:0 8px 22px -8px rgba(255,122,69,0.6);
-  }
-  .btn-accent:hover{box-shadow:0 10px 26px -6px rgba(255,122,69,0.75);}
-  .btn-ghost{background:transparent;border:1px solid var(--border);}
-  .btn-sm{padding:6px 11px;font-size:12px;border-radius:8px;}
-  .btn-danger-ghost{background:transparent;border:1px solid rgba(255,84,112,0.35);color:#ffb3c0;}
-
-  /* ---------- queue ---------- */
-  #queue{margin-top:20px;display:flex;flex-direction:column;gap:14px;}
-  #queueHead{display:flex;align-items:center;justify-content:space-between;margin:26px 0 12px;}
-  #queueHead h3{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:var(--text-dimmer);font-weight:650;margin:0;}
-  #queueHead .actions{display:flex;gap:8px;}
-
-  .card{
-    padding:18px 20px 20px;animation:rise .35s ease both;
-  }
-  @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-
-  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
-  .card-file{display:flex;align-items:center;gap:12px;min-width:0;}
-  .file-icon{
-    width:42px;height:42px;border-radius:11px;flex:none;
-    background:linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));
-    border:1px solid var(--border-soft);display:flex;align-items:center;justify-content:center;font-size:17px;
-  }
-  .file-meta{min-width:0;}
-  .file-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
-  .file-sub{font-size:11.5px;color:var(--text-dimmer);margin-top:2px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-  .badge{
-    padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:650;letter-spacing:.02em;
-  }
-  .badge-queued{background:rgba(255,255,255,0.08);color:var(--text-dim);}
-  .badge-working{background:var(--accent-soft);color:var(--accent);}
-  .badge-done{background:var(--accent2-soft);color:var(--accent2);}
-  .badge-error{background:var(--danger-soft);color:#ff8fa3;}
-  .badge-warn{background:rgba(255,200,87,0.14);color:var(--warn);}
-
-  .card-actions{display:flex;gap:8px;align-items:center;flex:none;}
-
-  .warn-banner{
-    margin-top:12px;padding:9px 12px;border-radius:10px;font-size:12px;
-    background:rgba(255,200,87,0.08);border:1px solid rgba(255,200,87,0.25);color:#ffdf9e;
-    display:flex;gap:8px;align-items:flex-start;
-  }
-  .error-banner{
-    margin-top:12px;padding:9px 12px;border-radius:10px;font-size:12px;
-    background:var(--danger-soft);border:1px solid rgba(255,84,112,0.3);color:#ffb3c0;
-  }
-
-  /* preset chips */
-  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}
-  .chip{
-    padding:8px 13px;border-radius:10px;font-size:12.5px;font-weight:580;cursor:pointer;
-    border:1px solid var(--border);background:var(--panel);color:var(--text-dim);
-    transition:all .15s ease;user-select:none;
-  }
-  .chip:hover{border-color:rgba(255,255,255,0.25);color:var(--text);}
-  .chip.active{
-    background:linear-gradient(145deg,var(--accent-soft),rgba(255,122,69,0.06));
-    border-color:rgba(255,122,69,0.55);color:var(--text);
-    box-shadow:inset 0 0 0 1px rgba(255,122,69,0.15);
-  }
-
-  /* advanced */
+  /* ---------- Advanced settings ---------- */
   .adv-toggle{
-    margin-top:14px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-dimmer);
-    cursor:pointer;width:fit-content;
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;
   }
-  .adv-toggle svg{transition:transform .2s ease;}
-  .adv-toggle.open svg{transform:rotate(90deg);}
-  .adv-panel{
-    max-height:0;overflow:hidden;transition:max-height .28s ease;
+  .adv-toggle .chev{transition:transform .2s ease;color:var(--muted);}
+  .adv-toggle.open .chev{transform:rotate(180deg);}
+  .adv-body{display:none;margin-top:16px;}
+  .adv-body.open{display:block;}
+  .adv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media(max-width:560px){.adv-grid{grid-template-columns:1fr;}}
+  .field label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;}
+  select, .crf-row input[type=range]{width:100%;}
+  select{
+    background:var(--void-2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+    padding:9px 10px;font-family:var(--font-body);font-size:13.5px;
   }
-  .adv-panel.open{max-height:420px;}
-  .adv-grid{
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;
-    padding:16px 2px 4px;
-  }
-  .field label{display:block;font-size:11px;color:var(--text-dimmer);margin-bottom:6px;letter-spacing:.02em;text-transform:uppercase;}
-  select, .seg{
-    width:100%;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.04);
-    border:1px solid var(--border);color:var(--text);font-size:12.5px;
-  }
-  select:focus, .seg:focus, input:focus-visible, .chip:focus-visible, .btn:focus-visible{
-    outline:2px solid rgba(255,122,69,0.6); outline-offset:1px;
-  }
-  .seg{display:flex;padding:3px;gap:3px;}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
   .seg button{
-    flex:1;border:none;background:transparent;color:var(--text-dim);padding:6px 4px;border-radius:6px;
-    font-size:12px;cursor:pointer;
+    flex:1;background:transparent;border:none;color:var(--muted);padding:9px 6px;font-size:13px;cursor:pointer;
+    font-family:var(--font-body);border-right:1px solid var(--border);
   }
-  .seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:650;}
-  .crf-row{grid-column:1/-1;}
-  .crf-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-dimmer);margin-top:5px;}
-  input[type=range]{
-    width:100%;height:4px;border-radius:99px;-webkit-appearance:none;background:rgba(255,255,255,0.1);
+  .seg button:last-child{border-right:none;}
+  .seg button.active{background:rgba(255,122,69,.16);color:var(--ember-hot);font-weight:600;}
+  .crf-row{display:flex;align-items:center;gap:10px;}
+  .crf-row input[type=range]{accent-color:var(--ember);}
+  .crf-val{font-family:var(--font-mono);font-size:13px;color:var(--cyan);min-width:28px;text-align:right;}
+  .crf-presets{display:flex;gap:6px;margin-top:8px;}
+  .crf-presets button{
+    font-size:11px;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;
+    color:var(--muted);cursor:pointer;font-family:var(--font-mono);
   }
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-    background:var(--accent);border:2px solid #1a0d05;cursor:pointer;margin-top:-5.5px;
-    box-shadow:0 2px 8px rgba(255,122,69,0.5);
-  }
-  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:99px;}
+  .crf-presets button:hover{border-color:var(--border-hi);color:var(--text);}
 
-  /* progress */
-  .progress-wrap{margin-top:16px;}
-  .progress-top{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;color:var(--text-dim);margin-bottom:7px;}
-  .progress-top .stage{color:var(--text);font-weight:600;}
-  .track{height:7px;border-radius:99px;background:rgba(255,255,255,0.07);overflow:hidden;position:relative;}
-  .fill{
-    height:100%;width:0%;border-radius:99px;
-    background:linear-gradient(90deg,var(--accent),var(--accent2));
-    transition:width .2s ease;position:relative;
+  /* ---------- Queue ---------- */
+  #queueEmpty{color:var(--muted-2);font-size:13px;text-align:center;padding:18px 0;}
+  .file-row{
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;
+    background:rgba(255,255,255,.02);
   }
-  .fill::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
-    width:40px;animation:shine 1.3s linear infinite;
+  .file-row .top-line{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;}
+  .file-row .meta{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+  .file-row .fico{font-size:20px;flex-shrink:0;}
+  .file-row .fname{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+  .file-row .fsize{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);flex-shrink:0;}
+  .file-row .actions{display:flex;gap:8px;align-items:center;}
+  .icon-btn{
+    background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;
   }
-  @keyframes shine{0%{transform:translateX(-40px);}100%{transform:translateX(220px);}}
+  .icon-btn:hover{border-color:var(--border-hi);color:var(--text);}
+  .badge{font-family:var(--font-mono);font-size:10.5px;padding:3px 9px;border-radius:999px;letter-spacing:.3px;}
+  .badge.queued{background:rgba(154,155,165,.15);color:var(--muted);}
+  .badge.working{background:rgba(255,122,69,.18);color:var(--ember-hot);}
+  .badge.done{background:rgba(74,222,128,.15);color:var(--success);}
+  .badge.error{background:rgba(255,92,92,.15);color:var(--danger);}
 
-  .size-compare{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;}
-  .size-pill{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.05);color:var(--text-dim);}
-  .size-pill.after{color:var(--accent2);background:var(--accent2-soft);font-weight:650;}
-  .size-arrow{color:var(--text-dimmer);}
-  .size-reduction{margin-left:auto;font-weight:700;color:var(--accent2);font-size:12.5px;}
-
-  .result-row{margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-  .result-row video{max-width:230px;border-radius:10px;border:1px solid var(--border);display:block;}
-
-  #footNote{
-    margin-top:46px;text-align:center;color:var(--text-dimmer);font-size:11.5px;line-height:1.7;
-    padding-top:20px;border-top:1px solid var(--border-soft);
+  .stage-line{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:10px 0 5px;font-family:var(--font-mono);}
+  .meter{height:9px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;position:relative;border:1px solid var(--border);}
+  .meter .fill{
+    height:100%;width:0%;border-radius:999px;
+    background:linear-gradient(90deg, var(--ember-dim), var(--ember) 55%, var(--ember-hot));
+    background-size:200% 100%;
+    animation:flow 1.8s linear infinite;
+    box-shadow:0 0 10px rgba(255,122,69,.5);
+    transition:width .25s ease;
   }
-  #footNote b{color:var(--text-dim);}
-
-  /* toasts */
-  #toasts{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:10px;z-index:70;max-width:320px;}
-  .toast{
-    padding:12px 14px;border-radius:12px;font-size:12.5px;
-    animation:toastIn .25s ease both;
+  @keyframes flow{0%{background-position:0% 0;}100%{background-position:-200% 0;}}
+  .size-compare{display:flex;gap:16px;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);flex-wrap:wrap;}
+  .size-compare b{color:var(--text);}
+  .size-compare .arrow{color:var(--muted-2);}
+  .size-compare .saved{color:var(--success);}
+  .err-msg{font-size:12px;color:var(--danger);margin-top:8px;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.25);padding:8px 10px;border-radius:8px;}
+  .dl-link{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--void);background:var(--success);
+    padding:6px 12px;border-radius:7px;text-decoration:none;font-weight:600;
   }
-  .toast.error{border-color:rgba(255,84,112,0.35);}
-  @keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-  .empty-hint{text-align:center;color:var(--text-dimmer);font-size:12.5px;padding:30px 0 6px;}
-
-  @media (max-width:640px){
-    .file-name{max-width:160px;}
-    header{padding:24px 16px 6px;}
-    main{padding:14px 16px 70px;}
-    .result-row video{max-width:100%;}
+  /* ---------- Forge button / summary ---------- */
+  .run-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:4px;}
+  .btn-forge{
+    font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:.4px;
+    background:linear-gradient(160deg, var(--ember-hot), var(--ember) 55%, var(--ember-dim));
+    color:#1a0d05;border:none;padding:13px 26px;border-radius:11px;cursor:pointer;
+    box-shadow:0 6px 22px rgba(255,122,69,.28);transition:transform .12s, box-shadow .12s;
   }
+  .btn-forge:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(255,122,69,.4);}
+  .btn-forge:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--border);color:var(--muted);padding:11px 18px;border-radius:11px;
+    cursor:pointer;font-family:var(--font-body);font-size:13.5px;
+  }
+  .btn-ghost:hover{border-color:var(--border-hi);color:var(--text);}
+  .btn-ghost:disabled{opacity:.35;cursor:not-allowed;}
+  .totals{font-family:var(--font-mono);font-size:12px;color:var(--muted);}
+  .totals b{color:var(--cyan);}
+
+  .banner{
+    border:1px solid rgba(255,179,71,.35);background:rgba(255,179,71,.08);color:#ffd9a8;
+    border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;
+  }
+
+  /* ---------- Loading overlay ---------- */
+  #loadOverlay{
+    position:fixed;inset:0;background:rgba(6,7,10,.86);backdrop-filter:blur(6px);z-index:50;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+    transition:opacity .3s ease;
+  }
+  #loadOverlay.hidden{opacity:0;pointer-events:none;}
+  .anvil-spin{font-size:44px;animation:flicker 1.6s ease-in-out infinite;}
+  @keyframes flicker{0%,100%{transform:scale(1) rotate(-2deg);opacity:1;}50%{transform:scale(1.08) rotate(2deg);opacity:.85;}}
+  #loadOverlay .msg{font-family:var(--font-display);font-size:16px;color:var(--muted);letter-spacing:.5px;}
+  #loadOverlay .sub{font-size:12px;color:var(--muted-2);max-width:320px;text-align:center;}
+
+  footer.sig{
+    text-align:center;margin-top:36px;font-size:12px;color:var(--muted-2);letter-spacing:.3px;
+  }
+  footer.sig span{color:var(--ember);text-shadow:0 0 10px rgba(255,122,69,.4);}
+
   @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.001s !important; transition-duration:.001s !important;}
+    .status-dot.busy, .meter .fill, .anvil-spin{animation:none;}
   }
 </style>
 </head>
 <body>
 
-<div id="engineBar"><div id="engineBarFill"></div></div>
-<div id="engineToast"><span class="dot" id="engineDot"></span><span id="engineToastText">Warming up compression engine…</span></div>
+<div id="loadOverlay">
+  <div class="anvil-spin">🔥</div>
+  <div class="msg">Igniting the forge…</div>
+  <div class="sub">Loading the encoding engine into your browser. This happens once and everything after runs fully offline, on your device.</div>
+</div>
 
-<header>
-  <div class="brand">
-    <div class="mark">🎬</div>
-    <div>
-      <h1>Video Forge</h1>
-      <p>Compress &amp; convert video — entirely in your browser</p>
-    </div>
-  </div>
-  <div class="status-pill glass" id="statusPill"><span class="dot" id="statusDot"></span><span id="statusText">Loading engine…</span></div>
-</header>
-
-<main>
-
-  <div id="localFileWarning" class="glass" style="display:none;padding:16px 18px;margin-bottom:16px;border-color:rgba(255,200,87,0.3);">
-    <div style="display:flex;gap:12px;align-items:flex-start;">
-      <div style="font-size:18px;">⚠️</div>
-      <div style="font-size:13px;line-height:1.6;color:var(--text-dim);">
-        <div style="color:var(--text);font-weight:650;margin-bottom:4px;">This page was opened directly from disk (file://)</div>
-        Browsers block the compression engine's worker from loading under a bare <code>file://</code> URL for security reasons — this isn't a bug, it's a fixed browser restriction. Video Forge will work normally once served over http(s), e.g.:
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <code id="serveCmd" style="background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:7px;font-size:12px;">python3 -m http.server 8000</code>
-          <button class="btn btn-ghost btn-sm" id="copyServeCmd" type="button">Copy</button>
-          <span style="color:var(--text-dimmer);">then open the printed localhost link</span>
-        </div>
-        <div style="margin-top:6px;color:var(--text-dimmer);">Or just push this file to a GitHub repo and enable GitHub Pages — that's the deployment this app is built for.</div>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">🎬</div>
+      <div>
+        <h1>Video Forge</h1>
+        <div class="tag">Shrink clips for Discord, Twitch, TikTok &amp; more — right in your browser</div>
       </div>
     </div>
-  </div>
+    <div class="status-pill"><span class="status-dot" id="engineDot"></span><span id="engineLabel">Loading engine…</span></div>
+  </header>
 
-  <div id="dropzone" class="glass">
-    <div class="row">
-      <div class="glyph">📥</div>
-      <div class="txt">
-        <h2 id="dzTitle">Drop video files here</h2>
-        <p id="dzSub">or click to browse — MP4, MOV, WebM, MKV, AVI, M4V</p>
-      </div>
-      <button class="btn btn-accent btn-inline" id="browseBtn" type="button">Choose Files</button>
+  <div class="banner" id="bigFileBanner" style="display:none;"></div>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="n">01</span> Drop your clips</h2>
+    <div id="dropzone">
+      <span class="flame">🔥</span>
+      <div class="primary">Drag &amp; drop video files here</div>
+      <div class="secondary">or click to browse · MP4, MOV, MKV, WebM, AVI · processed locally, never uploaded</div>
     </div>
-    <div class="formats" id="formatsNote">Everything runs locally on your machine — nothing is uploaded.</div>
-  </div>
-  <input type="file" id="fileInput" accept="video/*" multiple>
+    <input type="file" id="fileInput" multiple accept="video/*,.mkv,.mov,.avi,.webm,.mp4">
+  </section>
 
-  <div id="queueHead" style="display:none;">
-    <h3>Queue</h3>
-    <div class="actions">
-      <button class="btn btn-ghost btn-sm" id="compressAllBtn" type="button">▶ Compress All</button>
-      <button class="btn btn-ghost btn-sm" id="downloadAllBtn" type="button" disabled>⬇ Download All (ZIP)</button>
+  <section class="panel">
+    <h2 class="section-title"><span class="n">02</span> Pick a forge preset</h2>
+    <div class="preset-grid" id="presetGrid"></div>
+  </section>
+
+  <section class="panel">
+    <div class="adv-toggle" id="advToggle">
+      <h2 class="section-title" style="margin:0;"><span class="n">03</span> Advanced settings</h2>
+      <span class="chev">▾</span>
     </div>
-  </div>
-
-  <div id="queue"></div>
-
-  <div id="footNote">
-    <div><b>How it works:</b> Video Forge runs a real build of FFmpeg compiled to WebAssembly, entirely on your device. Nothing is uploaded anywhere.</div>
-    <div style="margin-top:4px;">Encoding runs on CPU via WebAssembly — browsers don't yet expose GPU video encoding to page scripts, so presets are tuned around the fastest software encoder settings that still hold quality.</div>
-  </div>
-
-</main>
-
-<div id="toasts"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script type="module">
-import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js";
-import { fetchFile } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js";
-
-/* ============================================================
-   CONSTANTS & STATE
-   ============================================================ */
-const CORE_BASE = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm";
-const MAX_SAFE_SIZE = 500 * 1024 * 1024; // 500MB soft warning threshold
-const SUPPORTED_EXT = ["mp4","mov","webm","mkv","avi","m4v","ogv","ogg","flv","wmv","3gp"];
-
-const PRESETS = {
-  discord: { key:"discord", label:"🚀 Discord", mode:"target-size", targetMB:8,   resolution:"720p",  fps:"30",       codec:"h264", audioMode:"compress", audioBitrate:96,  mono:false },
-  twitter: { key:"twitter", label:"🐦 X / Twitter", mode:"target-size", targetMB:25,  resolution:"1080p", fps:"30",     codec:"h264", audioMode:"keep",     audioBitrate:128, mono:false },
-  twitch:  { key:"twitch",  label:"🎮 Twitch Clip", mode:"crf", crf:20, resolution:"1080p", fps:"original", codec:"h264", audioMode:"keep", audioBitrate:160, mono:false },
-  tiktok:  { key:"tiktok",  label:"📱 TikTok", mode:"crf", crf:23, vertical:true, width:1080, height:1920, fps:"30", codec:"h264", audioMode:"keep", audioBitrate:128, mono:false },
-  shorts:  { key:"shorts",  label:"🎥 YT Shorts", mode:"fixed-bitrate", targetKbps:6000, vertical:true, width:1080, height:1920, fps:"30", codec:"h264", audioMode:"keep", audioBitrate:128, mono:false },
-  ultra:   { key:"ultra",   label:"💾 Ultra Compression", mode:"crf", crf:33, resolution:"480p", fps:"24", codec:"h265", audioMode:"compress", audioBitrate:64, mono:true },
-};
-const PRESET_ORDER = ["discord","twitter","twitch","tiktok","shorts","ultra"];
-
-const CRF_LABELS = [
-  {v:16, t:"Near-lossless"},
-  {v:20, t:"High quality"},
-  {v:23, t:"Balanced"},
-  {v:28, t:"Compressed"},
-  {v:35, t:"Aggressive"},
-  {v:45, t:"Max compression"},
-];
-
-const isFileProtocol = location.protocol === "file:";
-
-let ffmpeg = null;
-let ffmpegReady = false;
-let ffmpegLoadPromise = null;
-let currentJobId = null;   // id of the queue item currently being encoded
-let isProcessing = false;
-
-const items = new Map(); // id -> item state
-let seq = 0;
-
-/* ============================================================
-   DOM REFS
-   ============================================================ */
-const $ = (sel, root=document) => root.querySelector(sel);
-const dropzone = $("#dropzone");
-const fileInput = $("#fileInput");
-const browseBtn = $("#browseBtn");
-const queueEl = $("#queue");
-const queueHead = $("#queueHead");
-const compressAllBtn = $("#compressAllBtn");
-const downloadAllBtn = $("#downloadAllBtn");
-const statusDot = $("#statusDot");
-const statusText = $("#statusText");
-const engineBarFill = $("#engineBarFill");
-const engineToast = $("#engineToast");
-const engineDot = $("#engineDot");
-const engineToastText = $("#engineToastText");
-const toasts = $("#toasts");
-
-/* ============================================================
-   TOASTS
-   ============================================================ */
-function toast(msg, type="info"){
-  const el = document.createElement("div");
-  el.className = "toast glass" + (type === "error" ? " error" : "");
-  el.textContent = msg;
-  toasts.appendChild(el);
-  setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateY(6px)"; el.style.transition="all .3s ease"; setTimeout(()=>el.remove(),320); }, 4200);
-}
-
-/* ============================================================
-   ENGINE LOADING (lazy + progressive, with real byte progress)
-   ============================================================ */
-async function fetchWithProgress(url, mime, onProgress){
-  const res = await fetch(url);
-  if(!res.ok) throw new Error("Network error fetching " + url);
-  const total = Number(res.headers.get("Content-Length")) || 0;
-  const reader = res.body.getReader();
-  const chunks = [];
-  let received = 0;
-  while(true){
-    const { done, value } = await reader.read();
-    if(done) break;
-    chunks.push(value);
-    received += value.length;
-    if(total) onProgress(received/total);
-  }
-  const blob = new Blob(chunks, { type: mime });
-  return URL.createObjectURL(blob);
-}
-
-function setEngineStatus(state, label){
-  statusText.textContent = label;
-  statusDot.className = "dot" + (state === "ready" ? " ready" : "");
-}
-
-function initEngine(){
-  if(ffmpegLoadPromise) return ffmpegLoadPromise;
-
-  if(isFileProtocol){
-    setEngineStatus("error", "Can't run from file://");
-    engineToastText.textContent = "Serve over http(s) to use the engine — see the notice above.";
-    engineToast.classList.add("show");
-    ffmpegLoadPromise = Promise.reject(new Error("file-protocol"));
-    ffmpegLoadPromise.catch(()=>{}); // prevent unhandled rejection noise
-    return ffmpegLoadPromise;
-  }
-
-  setEngineStatus("loading", "Loading engine…");
-  engineToast.classList.add("show");
-
-  ffmpegLoadPromise = (async () => {
-    ffmpeg = new FFmpeg();
-    ffmpeg.on("log", ({ message }) => { /* quiet by default */ });
-    ffmpeg.on("progress", ({ progress }) => {
-      if(currentJobId == null) return;
-      const p = Math.max(0, Math.min(1, progress || 0));
-      updateJobProgress(currentJobId, p);
-    });
-
-    try{
-      let coreP = 0, wasmP = 0;
-      const updateOverall = () => {
-        const pct = Math.round(((coreP + wasmP) / 2) * 100);
-        engineBarFill.style.width = pct + "%";
-        engineToastText.textContent = `Warming up compression engine… ${pct}%`;
-      };
-      const [coreURL, wasmURL] = await Promise.all([
-        fetchWithProgress(`${CORE_BASE}/ffmpeg-core.js`, "text/javascript", p => { coreP = p; updateOverall(); }),
-        fetchWithProgress(`${CORE_BASE}/ffmpeg-core.wasm`, "application/wasm", p => { wasmP = p; updateOverall(); }),
-      ]);
-      await ffmpeg.load({ coreURL, wasmURL });
-      ffmpegReady = true;
-      setEngineStatus("ready", "Engine ready");
-      engineDot.classList.add("ready");
-      engineToastText.textContent = "Engine ready";
-      engineBarFill.style.width = "100%";
-      setTimeout(()=>{ engineToast.classList.remove("show"); engineBarFill.style.width = "0%"; }, 1400);
-    }catch(err){
-      console.error(err);
-      setEngineStatus("error", "Engine failed to load");
-      engineToastText.textContent = "Couldn't load the engine — check your connection and reload.";
-      toast("Failed to load the compression engine. Check your internet connection and reload the page.", "error");
-      ffmpegLoadPromise = null; // allow retry
-      throw err;
-    }
-  })();
-
-  return ffmpegLoadPromise;
-}
-
-if(isFileProtocol){
-  const banner = $("#localFileWarning");
-  banner.style.display = "block";
-  const copyBtn = $("#copyServeCmd");
-  copyBtn?.addEventListener("click", () => {
-    navigator.clipboard?.writeText("python3 -m http.server 8000").then(()=>{
-      copyBtn.textContent = "Copied";
-      setTimeout(()=>copyBtn.textContent = "Copy", 1500);
-    });
-  });
-  setEngineStatus("error", "Serve over http(s) to run");
-}
-
-// Warm the engine in the background as soon as the browser is idle,
-// so it's typically ready before the user finishes picking a preset.
-// (Skipped automatically under file:// — see initEngine().)
-if("requestIdleCallback" in window){
-  requestIdleCallback(() => initEngine().catch(()=>{}), { timeout: 3000 });
-}else{
-  setTimeout(() => initEngine().catch(()=>{}), 600);
-}
-
-/* ============================================================
-   FILE INTAKE
-   ============================================================ */
-["dragenter","dragover"].forEach(evt => dropzone.addEventListener(evt, e => {
-  e.preventDefault(); dropzone.classList.add("drag");
-}));
-["dragleave","drop"].forEach(evt => dropzone.addEventListener(evt, e => {
-  e.preventDefault(); dropzone.classList.remove("drag");
-}));
-dropzone.addEventListener("drop", e => {
-  const files = [...(e.dataTransfer?.files || [])];
-  if(files.length) handleFiles(files);
-});
-dropzone.addEventListener("click", (e) => {
-  if(e.target === browseBtn) return;
-  fileInput.click();
-});
-browseBtn.addEventListener("click", () => fileInput.click());
-fileInput.addEventListener("change", () => {
-  if(fileInput.files.length) handleFiles([...fileInput.files]);
-  fileInput.value = "";
-});
-
-function isSupported(file){
-  const ext = (file.name.split(".").pop() || "").toLowerCase();
-  return SUPPORTED_EXT.includes(ext) || file.type.startsWith("video/");
-}
-
-function getDuration(file){
-  return new Promise(resolve => {
-    const v = document.createElement("video");
-    v.preload = "metadata";
-    const url = URL.createObjectURL(file);
-    v.src = url;
-    const done = (d) => { URL.revokeObjectURL(url); resolve(d); };
-    v.onloadedmetadata = () => done(isFinite(v.duration) && v.duration > 0 ? v.duration : 0);
-    v.onerror = () => done(0);
-    setTimeout(()=>done(0), 8000);
-  });
-}
-
-async function handleFiles(fileList){
-  for(const file of fileList){
-    if(!isSupported(file)){
-      toast(`"${file.name}" doesn't look like a supported video format.`, "error");
-      continue;
-    }
-    const id = "f" + (++seq);
-    const item = {
-      id, file, name: file.name, size: file.size,
-      status: "queued", // queued | working | done | error
-      stage: "", progress: 0,
-      presetKey: null,
-      duration: 0,
-      settings: {
-        resolution: "original", fps: "original", codec: "h264",
-        crf: 23, audioMode: "keep", audioBitrate: 128, mono:false,
-        vertical:false, width:1080, height:1920, mode:"crf",
-      },
-      advOpen: false,
-      outputBlob: null,
-      outputSize: 0,
-      outputName: "",
-      error: "",
-      startedAt: 0,
-    };
-    items.set(id, item);
-    renderCard(item);
-    getDuration(file).then(d => { item.duration = d; });
-  }
-  queueHead.style.display = items.size ? "flex" : "none";
-  dropzone.classList.toggle("compact", items.size > 0);
-  $("#dzTitle").textContent = items.size ? "Drop more files" : "Drop video files here";
-  refreshDownloadAllState();
-}
-
-/* ============================================================
-   RENDERING
-   ============================================================ */
-function fmtSize(bytes){
-  if(!bytes && bytes !== 0) return "—";
-  if(bytes < 1024*1024) return (bytes/1024).toFixed(0) + " KB";
-  return (bytes/(1024*1024)).toFixed(bytes < 100*1024*1024 ? 1 : 0) + " MB";
-}
-function fmtTime(sec){
-  if(!isFinite(sec) || sec < 0) return "--:--";
-  sec = Math.round(sec);
-  const m = Math.floor(sec/60), s = sec%60;
-  return `${m}:${String(s).padStart(2,"0")}`;
-}
-function crfLabelFor(v){
-  let best = CRF_LABELS[0];
-  for(const l of CRF_LABELS) if(v >= l.v) best = l;
-  return best.t;
-}
-
-function cardHTML(item){
-  const ext = (item.name.split(".").pop()||"").toUpperCase();
-  return `
-    <div class="card-top">
-      <div class="card-file">
-        <div class="file-icon">🎞️</div>
-        <div class="file-meta">
-          <div class="file-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
-          <div class="file-sub">
-            <span>${ext}</span>
-            <span>${fmtSize(item.size)}</span>
-            <span class="badge ${badgeClass(item.status)}" data-role="badge">${badgeLabel(item)}</span>
-          </div>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button class="btn btn-ghost btn-sm" data-act="copy" type="button">Copy settings</button>
-        <button class="btn btn-accent btn-sm" data-act="compress" type="button">▶ Compress</button>
-        <button class="btn btn-danger-ghost btn-sm" data-act="remove" type="button">✕</button>
-      </div>
-    </div>
-
-    <div data-role="warnbox"></div>
-
-    <div class="presets" data-role="presets">
-      ${PRESET_ORDER.map(k => `<div class="chip" data-preset="${k}">${PRESETS[k].label}</div>`).join("")}
-    </div>
-
-    <div class="adv-toggle" data-act="toggleAdv">
-      <svg width="9" height="9" viewBox="0 0 9 9"><polygon points="0,0 9,4.5 0,9" fill="currentColor"/></svg>
-      <span>Advanced controls</span>
-    </div>
-    <div class="adv-panel" data-role="advpanel">
+    <div class="adv-body" id="advBody">
       <div class="adv-grid">
         <div class="field">
           <label>Resolution</label>
-          <select data-set="resolution">
+          <select id="selResolution">
             <option value="original">Original</option>
-            <option value="1080p">1080p</option>
-            <option value="720p">720p</option>
-            <option value="480p">480p</option>
+            <option value="1080">1080p</option>
+            <option value="720">720p</option>
+            <option value="480">480p</option>
+            <option value="vertical">1080×1920 (vertical crop)</option>
           </select>
         </div>
         <div class="field">
           <label>Frame rate</label>
-          <select data-set="fps">
+          <select id="selFps">
             <option value="original">Original</option>
             <option value="60">60 fps</option>
             <option value="30">30 fps</option>
@@ -687,441 +314,527 @@ function cardHTML(item){
         </div>
         <div class="field">
           <label>Codec</label>
-          <div class="seg" data-seg="codec">
-            <button data-val="h264" type="button">H.264</button>
-            <button data-val="h265" type="button">H.265</button>
+          <div class="seg" id="segCodec">
+            <button data-val="h264" class="active">H.264</button>
+            <button data-val="h265">H.265 (smaller)</button>
           </div>
         </div>
         <div class="field">
           <label>Audio</label>
-          <select data-set="audioMode">
-            <option value="keep">Keep</option>
-            <option value="compress">Compress</option>
-            <option value="remove">Remove</option>
-          </select>
+          <div class="seg" id="segAudio">
+            <button data-val="keep" class="active">Keep</button>
+            <button data-val="compress">Compress</button>
+            <button data-val="remove">Remove</button>
+          </div>
         </div>
-        <div class="field">
-          <label>Audio bitrate</label>
-          <select data-set="audioBitrate">
-            <option value="160">160 kbps</option>
-            <option value="128">128 kbps</option>
-            <option value="96">96 kbps</option>
-            <option value="64">64 kbps</option>
-            <option value="32">32 kbps</option>
-          </select>
-        </div>
-        <div class="field crf-row">
-          <label>Quality (CRF) — <span data-role="crfval">23</span> · <span data-role="crftxt">Balanced</span></label>
-          <input type="range" min="0" max="51" value="23" data-set="crf">
-          <div class="crf-labels"><span>0 lossless</span><span>23 balanced</span><span>51 tiny</span></div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Quality (CRF — lower is higher quality &amp; larger file) <span id="crfModeNote" style="color:var(--muted-2);"></span></label>
+          <div class="crf-row">
+            <input type="range" id="crfSlider" min="0" max="51" value="23">
+            <span class="crf-val" id="crfVal">23</span>
+          </div>
+          <div class="crf-presets">
+            <button data-crf="18">18 · High quality</button>
+            <button data-crf="23">23 · Balanced</button>
+            <button data-crf="28">28 · Compressed</button>
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="progress-wrap" data-role="progresswrap" style="display:none;">
-      <div class="progress-top">
-        <span class="stage" data-role="stage">Encoding</span>
-        <span data-role="pct">0%</span>
+  <section class="panel">
+    <h2 class="section-title"><span class="n">04</span> Queue &amp; output</h2>
+    <div id="queueEmpty">No clips loaded yet — drop a file above to get started.</div>
+    <div id="queueList"></div>
+
+    <div class="run-row">
+      <div style="display:flex;gap:10px;">
+        <button class="btn-forge" id="btnForge" disabled>🔥 Forge It</button>
+        <button class="btn-ghost" id="btnZip" style="display:none;">⬇ Download all (.zip)</button>
+        <button class="btn-ghost" id="btnClear">Clear queue</button>
       </div>
-      <div class="track"><div class="fill" data-role="fill" style="width:0%"></div></div>
-      <div class="progress-top" style="margin-top:6px;">
-        <span data-role="eta">ETA —</span>
-        <span data-role="livesize"></span>
-      </div>
+      <div class="totals" id="totalsLabel"></div>
     </div>
+  </section>
 
-    <div data-role="result"></div>
-  `;
-}
+  <footer class="sig">Made with love by Odin — <span>Odiverse × Gigaverse Labs</span></footer>
+</div>
 
-function badgeClass(status){
-  return { queued:"badge-queued", working:"badge-working", done:"badge-done", error:"badge-error" }[status] || "badge-queued";
-}
-function badgeLabel(item){
-  return { queued:"Queued", working: item.stage || "Working", done:"Done", error:"Error" }[item.status] || "Queued";
-}
+<script type="module">
+import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/[email protected]/dist/esm/index.js';
+import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/[email protected]/dist/esm/index.js';
 
-function escapeHtml(s){
-  return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-}
-
-function renderCard(item){
-  const el = document.createElement("div");
-  el.className = "card glass";
-  el.id = "card-" + item.id;
-  el.innerHTML = cardHTML(item);
-  queueEl.appendChild(el);
-  wireCard(item, el);
-  syncAdvFields(item, el);
-
-  if(item.size > MAX_SAFE_SIZE){
-    $("[data-role=warnbox]", el).innerHTML = `<div class="warn-banner">⚠️ This file is ${fmtSize(item.size)} — large files can be slow or hit browser memory limits. Lowering resolution first is recommended.</div>`;
+/* ============================= PRESETS ============================= */
+const PRESETS = {
+  discord: {
+    label:'Discord Clip', icon:'💬', desc:'Squeezes under the 8MB embed limit.', targetLabel:'Target ~8MB',
+    resolution:'720', fps:'30', codec:'h264', mode:'bitrate', targetSizeMB:8, audioMode:'compress', audioBitrate:64, crf:30
+  },
+  twitter: {
+    label:'X / Twitter Clip', icon:'🐦', desc:'Balanced compression, up to 1080p.', targetLabel:'Target ~25MB',
+    resolution:'1080', fps:'original', codec:'h264', mode:'bitrate', targetSizeMB:25, audioMode:'compress', audioBitrate:128, crf:26
+  },
+  twitch: {
+    label:'Twitch Highlight', icon:'🎮', desc:'High quality, keeps 60fps where possible.', targetLabel:'Minimal compression',
+    resolution:'original', fps:'original', codec:'h264', mode:'crf', crf:18, audioMode:'keep', audioBitrate:160
+  },
+  tiktok: {
+    label:'TikTok Vertical', icon:'📱', desc:'Auto-crops to 1080×1920, optimized bitrate.', targetLabel:'1080×1920',
+    resolution:'vertical', fps:'30', codec:'h264', mode:'crf', crf:23, audioMode:'compress', audioBitrate:128
+  },
+  shorts: {
+    label:'YouTube Shorts', icon:'🎥', desc:'Vertical, social-ready balanced encode.', targetLabel:'1080×1920',
+    resolution:'vertical', fps:'30', codec:'h264', mode:'crf', crf:25, audioMode:'compress', audioBitrate:128
+  },
+  ultra: {
+    label:'Ultra Compress', icon:'💣', desc:'Maximum shrink. Quality takes a back seat.', targetLabel:'Smallest possible file',
+    resolution:'480', fps:'24', codec:'h264', mode:'crf', crf:36, audioMode:'compress', audioBitrate:48
   }
+};
+
+/* ============================= STATE ============================= */
+let ffmpeg = null;
+let engineReady = false;
+let filesState = []; // {id, file, name, size, status, progress, stage, outputBlob, outputSize, error, presetKey}
+let idCounter = 0;
+let activeId = null;
+let currentDuration = null;
+let processing = false;
+let selectedPreset = 'discord';
+
+const settings = { resolution:'720', fps:'30', codec:'h264', crf:30, audioMode:'compress', audioBitrate:64 };
+let crfTouchedManually = false;
+
+/* ============================= DOM refs ============================= */
+const $ = (sel) => document.querySelector(sel);
+const dropzone = $('#dropzone');
+const fileInput = $('#fileInput');
+const presetGrid = $('#presetGrid');
+const queueList = $('#queueList');
+const queueEmpty = $('#queueEmpty');
+const btnForge = $('#btnForge');
+const btnZip = $('#btnZip');
+const btnClear = $('#btnClear');
+const totalsLabel = $('#totalsLabel');
+const loadOverlay = $('#loadOverlay');
+const engineDot = $('#engineDot');
+const engineLabel = $('#engineLabel');
+const bigFileBanner = $('#bigFileBanner');
+
+/* ============================= Helpers ============================= */
+function fmtBytes(bytes){
+  if(bytes === 0) return '0 B';
+  const units = ['B','KB','MB','GB'];
+  const i = Math.floor(Math.log(bytes)/Math.log(1024));
+  return `${(bytes/Math.pow(1024,i)).toFixed(i===0?0:1)} ${units[i]}`;
+}
+function fmtTime(sec){
+  if(!isFinite(sec) || sec < 0) return '--:--';
+  const m = Math.floor(sec/60), s = Math.round(sec%60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function sanitizeName(name){
+  return name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9_\-]+/gi,'_').slice(0,60);
+}
+function humanError(raw){
+  const msg = (raw||'').toLowerCase();
+  if(msg.includes('invalid data') || msg.includes('moov atom') || msg.includes('could not find codec'))
+    return "This file looks corrupted or uses a format the engine can't read. Try re-exporting it or use a different file.";
+  if(msg.includes('memory') || msg.includes('out of bounds') || msg.includes('abort'))
+    return "This file is too large for your browser to handle in one go. Try a shorter clip, a lower resolution, or free up some memory (close other tabs).";
+  if(msg.includes('no such file'))
+    return "The file couldn't be read. Try dropping it in again.";
+  return "Something went wrong during encoding. Try a different preset, a lower resolution, or a smaller file.";
 }
 
-function syncAdvFields(item, el){
-  el.querySelector('[data-set=resolution]').value = item.settings.resolution;
-  el.querySelector('[data-set=fps]').value = item.settings.fps;
-  el.querySelector('[data-set=audioMode]').value = item.settings.audioMode;
-  el.querySelector('[data-set=audioBitrate]').value = String(item.settings.audioBitrate);
-  el.querySelectorAll('[data-seg=codec] button').forEach(b => b.classList.toggle("on", b.dataset.val === item.settings.codec));
-  el.querySelector('[data-set=crf]').value = item.settings.crf;
-  el.querySelector('[data-role=crfval]').textContent = item.settings.crf;
-  el.querySelector('[data-role=crftxt]').textContent = crfLabelFor(item.settings.crf);
-  el.querySelectorAll('.chip').forEach(c => c.classList.toggle("active", c.dataset.preset === item.presetKey));
-  el.querySelector('[data-set=audioBitrate]').disabled = item.settings.audioMode === "remove";
-}
-
-function wireCard(item, el){
-  el.querySelectorAll(".chip").forEach(chip => {
-    chip.addEventListener("click", () => applyPreset(item, chip.dataset.preset, el));
+/* ============================= Engine init ============================= */
+const logBuffer = [];
+async function initEngine(){
+  ffmpeg = new FFmpeg();
+  ffmpeg.on('log', ({message}) => {
+    logBuffer.push(message);
+    if(logBuffer.length > 80) logBuffer.shift();
+    const m = message.match(/Duration:\s*(\d\d):(\d\d):(\d\d)\.(\d\d)/);
+    if(m) currentDuration = (+m[1])*3600 + (+m[2])*60 + (+m[3]) + (+m[4])/100;
+  });
+  ffmpeg.on('progress', ({progress}) => {
+    if(activeId == null) return;
+    const p = Math.max(0, Math.min(1, progress || 0));
+    updateFile(activeId, { progress: p });
   });
 
-  el.querySelector('[data-act=toggleAdv]').addEventListener("click", (e) => {
-    item.advOpen = !item.advOpen;
-    e.currentTarget.classList.toggle("open", item.advOpen);
-    el.querySelector('[data-role=advpanel]').classList.toggle("open", item.advOpen);
-  });
-
-  el.querySelector('[data-set=resolution]').addEventListener("change", e => {
-    item.settings.resolution = e.target.value; item.settings.vertical = false; item.presetKey = null; markManual(item, el);
-  });
-  el.querySelector('[data-set=fps]').addEventListener("change", e => {
-    item.settings.fps = e.target.value; item.presetKey = null; markManual(item, el);
-  });
-  el.querySelectorAll('[data-seg=codec] button').forEach(b => {
-    b.addEventListener("click", () => {
-      item.settings.codec = b.dataset.val; item.presetKey = null;
-      el.querySelectorAll('[data-seg=codec] button').forEach(x => x.classList.toggle("on", x===b));
+  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/[email protected]/dist/esm';
+  try{
+    await ffmpeg.load({
+      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
     });
-  });
-  el.querySelector('[data-set=audioMode]').addEventListener("change", e => {
-    item.settings.audioMode = e.target.value; item.presetKey = null;
-    el.querySelector('[data-set=audioBitrate]').disabled = e.target.value === "remove";
-  });
-  el.querySelector('[data-set=audioBitrate]').addEventListener("change", e => {
-    item.settings.audioBitrate = Number(e.target.value); item.presetKey = null;
-  });
-  el.querySelector('[data-set=crf]').addEventListener("input", e => {
-    item.settings.crf = Number(e.target.value);
-    item.settings.mode = "crf";
-    item.presetKey = null;
-    el.querySelector('[data-role=crfval]').textContent = item.settings.crf;
-    el.querySelector('[data-role=crftxt]').textContent = crfLabelFor(item.settings.crf);
-    el.querySelectorAll('.chip').forEach(c => c.classList.remove("active"));
-  });
-
-  el.querySelector('[data-act=compress]').addEventListener("click", () => enqueueJob(item.id));
-  el.querySelector('[data-act=remove]').addEventListener("click", () => removeItem(item.id));
-  el.querySelector('[data-act=copy]').addEventListener("click", () => copySettings(item));
+    engineReady = true;
+    engineDot.classList.add('ready');
+    engineLabel.textContent = 'Engine ready';
+    loadOverlay.classList.add('hidden');
+    refreshForgeButton();
+  }catch(e){
+    engineLabel.textContent = 'Engine failed to load';
+    loadOverlay.querySelector('.msg').textContent = "The forge couldn't ignite.";
+    loadOverlay.querySelector('.sub').textContent = "Your browser blocked the encoding engine from loading (check your connection, or try Chrome/Edge desktop). Reload the page to try again.";
+  }
 }
 
-function markManual(item, el){
-  el.querySelectorAll('.chip').forEach(c => c.classList.remove("active"));
+/* ============================= Preset UI ============================= */
+function renderPresets(){
+  presetGrid.innerHTML = '';
+  Object.entries(PRESETS).forEach(([key, p]) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'preset-card' + (key === selectedPreset ? ' active' : '');
+    card.innerHTML = `
+      <span class="icon">${p.icon}</span>
+      <span class="title">${p.label}</span>
+      <span class="desc">${p.desc}</span>
+      <span class="target">${p.targetLabel}</span>
+    `;
+    card.addEventListener('click', () => applyPreset(key));
+    presetGrid.appendChild(card);
+  });
 }
-
-function applyPreset(item, key, el){
+function applyPreset(key){
+  selectedPreset = key;
   const p = PRESETS[key];
-  item.presetKey = key;
-  item.settings = {
-    ...item.settings,
-    resolution: p.resolution || "original",
-    fps: p.fps || "original",
-    codec: p.codec,
-    audioMode: p.audioMode,
-    audioBitrate: p.audioBitrate,
-    mono: !!p.mono,
-    vertical: !!p.vertical,
-    width: p.width || 1080,
-    height: p.height || 1920,
-    mode: p.mode,
-    crf: p.crf || item.settings.crf,
-    targetMB: p.targetMB,
-    targetKbps: p.targetKbps,
-  };
-  syncAdvFields(item, el);
+  settings.resolution = p.resolution;
+  settings.fps = p.fps;
+  settings.codec = p.codec;
+  settings.crf = p.crf;
+  settings.audioMode = p.audioMode;
+  settings.audioBitrate = p.audioBitrate;
+  settings.mode = p.mode;
+  settings.targetSizeMB = p.targetSizeMB || null;
+  crfTouchedManually = false;
+  syncAdvancedUI();
+  renderPresets();
 }
 
-function copySettings(item){
-  const data = { preset: item.presetKey, ...item.settings };
-  const text = JSON.stringify(data, null, 2);
-  if(navigator.clipboard?.writeText){
-    navigator.clipboard.writeText(text).then(()=>toast("Settings copied to clipboard."));
-  }else{
-    toast("Clipboard isn't available in this browser.", "error");
-  }
-}
-
-function removeItem(id){
-  const item = items.get(id);
-  if(!item) return;
-  if(item.status === "working"){ toast("Can't remove a file that's currently compressing.", "error"); return; }
-  items.delete(id);
-  $("#card-"+id)?.remove();
-  queueHead.style.display = items.size ? "flex" : "none";
-  dropzone.classList.toggle("compact", items.size > 0);
-  refreshDownloadAllState();
-}
-
-/* ============================================================
-   ENCODING PIPELINE
-   ============================================================ */
-const jobQueue = [];
-
-function enqueueJob(id){
-  const item = items.get(id);
-  if(!item || item.status === "working") return;
-  item.status = "queued"; item.progress = 0; item.error = "";
-  updateBadge(item);
-  jobQueue.push(id);
-  pumpQueue();
-}
-
-compressAllBtn.addEventListener("click", () => {
-  for(const [id, item] of items){
-    if(item.status !== "working" && item.status !== "done") enqueueJob(id);
-  }
+/* ============================= Advanced settings UI ============================= */
+const advToggle = $('#advToggle');
+const advBody = $('#advBody');
+advToggle.addEventListener('click', () => {
+  advToggle.classList.toggle('open');
+  advBody.classList.toggle('open');
 });
 
-async function pumpQueue(){
-  if(isProcessing) return;
-  const id = jobQueue.shift();
-  if(!id) return;
-  const item = items.get(id);
-  if(!item){ pumpQueue(); return; }
+const selResolution = $('#selResolution');
+const selFps = $('#selFps');
+const segCodec = $('#segCodec');
+const segAudio = $('#segAudio');
+const crfSlider = $('#crfSlider');
+const crfVal = $('#crfVal');
+const crfModeNote = $('#crfModeNote');
 
-  isProcessing = true;
-  currentJobId = id;
-  item.status = "working";
-  item.startedAt = performance.now();
-  updateBadge(item);
-  setStage(item, "Preparing");
-
-  try{
-    setStage(item, "Loading engine");
-    showProgress(item, true);
-    await initEngine();
-
-    const inputName = `in_${item.id}.${(item.name.split(".").pop()||"mp4")}`;
-    const outputName = `out_${item.id}.mp4`;
-
-    setStage(item, "Reading file");
-    updateJobProgress(item.id, 0.02);
-    const data = await fetchFile(item.file);
-    await ffmpeg.writeFile(inputName, data);
-
-    const args = buildArgs(item, inputName, outputName);
-
-    setStage(item, "Encoding");
-    await ffmpeg.exec(args);
-
-    setStage(item, "Finalizing");
-    const out = await ffmpeg.readFile(outputName);
-    const blob = new Blob([out.buffer], { type: "video/mp4" });
-
-    item.outputBlob = blob;
-    item.outputSize = blob.size;
-    item.outputName = buildOutputName(item);
-    item.status = "done";
-    updateJobProgress(item.id, 1);
-    renderResult(item);
-    toast(`"${item.name}" compressed — ${fmtSize(item.size)} → ${fmtSize(item.outputSize)}.`);
-
-    try{ await ffmpeg.deleteFile(inputName); await ffmpeg.deleteFile(outputName); }catch(_e){}
-  }catch(err){
-    console.error(err);
-    item.status = "error";
-    item.error = friendlyError(err);
-    renderError(item);
-    toast(`Failed to compress "${item.name}".`, "error");
-  }finally{
-    updateBadge(item);
-    showProgress(item, false);
-    isProcessing = false;
-    currentJobId = null;
-    refreshDownloadAllState();
-    pumpQueue();
-  }
+selResolution.addEventListener('change', () => settings.resolution = selResolution.value);
+selFps.addEventListener('change', () => settings.fps = selFps.value);
+segCodec.addEventListener('click', (e) => {
+  const btn = e.target.closest('button'); if(!btn) return;
+  [...segCodec.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  settings.codec = btn.dataset.val;
+});
+segAudio.addEventListener('click', (e) => {
+  const btn = e.target.closest('button'); if(!btn) return;
+  [...segAudio.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  settings.audioMode = btn.dataset.val;
+});
+crfSlider.addEventListener('input', () => {
+  crfVal.textContent = crfSlider.value;
+  settings.crf = +crfSlider.value;
+  crfTouchedManually = true;
+  settings.mode = 'crf';
+  updateCrfNote();
+});
+document.querySelectorAll('.crf-presets button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    crfSlider.value = btn.dataset.crf;
+    crfSlider.dispatchEvent(new Event('input'));
+  });
+});
+function updateCrfNote(){
+  crfModeNote.textContent = (settings.mode === 'bitrate' && settings.targetSizeMB)
+    ? `— using target-size bitrate (${settings.targetSizeMB}MB), slider overrides this` : '';
+}
+function syncAdvancedUI(){
+  selResolution.value = settings.resolution;
+  selFps.value = settings.fps;
+  [...segCodec.children].forEach(b => b.classList.toggle('active', b.dataset.val === settings.codec));
+  [...segAudio.children].forEach(b => b.classList.toggle('active', b.dataset.val === settings.audioMode));
+  crfSlider.value = settings.crf;
+  crfVal.textContent = settings.crf;
+  updateCrfNote();
 }
 
-function friendlyError(err){
-  const msg = String(err?.message || err || "");
-  if(msg === "file-protocol") return "Can't load the engine from a file:// page — serve this file over http(s) (see the notice above the drop zone) and try again.";
-  if(/memory|out of memory|allocat/i.test(msg)) return "Ran out of memory while encoding. Try a lower resolution or a smaller file.";
-  if(/network|fetch/i.test(msg)) return "A network error interrupted processing. Check your connection and try again.";
-  return "Something went wrong while encoding this file. Try different settings or a different file.";
+/* ============================= File intake ============================= */
+const ALLOWED_EXT = ['mp4','mov','mkv','webm','avi','m4v','flv'];
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('dragover');
+  addFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+
+function addFiles(fileList){
+  let hasBig = false;
+  [...fileList].forEach(file => {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    const id = ++idCounter;
+    const rec = {
+      id, file, name: file.name, size: file.size, status: 'queued', progress: 0, stage: 'Waiting',
+      outputBlob: null, outputSize: null, error: null,
+      unsupported: !ALLOWED_EXT.includes(ext)
+    };
+    if(rec.unsupported){
+      rec.status = 'error';
+      rec.error = `".${ext}" isn't a supported video format. Try MP4, MOV, MKV, WebM or AVI.`;
+    }
+    if(file.size > 800*1024*1024) hasBig = true;
+    filesState.push(rec);
+  });
+  bigFileBanner.style.display = hasBig ? 'block' : 'none';
+  if(hasBig) bigFileBanner.textContent = '⚠ One or more files are quite large. Big files can take a while and may strain your browser\'s memory — consider trimming clips first if you run into trouble.';
+  renderQueue();
+  refreshForgeButton();
 }
 
-/* ---- ffmpeg argument builder ---- */
-function computeBitrateKbps(durationSec, targetMB, audioKbps){
-  if(!durationSec || durationSec <= 0) return null;
-  const totalKbits = targetMB * 8192 * 0.94; // safety margin
-  const totalKbps = totalKbits / durationSec;
-  return Math.max(120, Math.floor(totalKbps - audioKbps));
+/* ============================= Queue rendering ============================= */
+function renderQueue(){
+  queueEmpty.style.display = filesState.length ? 'none' : 'block';
+  queueList.innerHTML = '';
+  filesState.forEach(rec => queueList.appendChild(buildFileRow(rec)));
+  updateTotals();
+}
+function buildFileRow(rec){
+  const row = document.createElement('div');
+  row.className = 'file-row';
+  row.dataset.id = rec.id;
+
+  const badgeClass = rec.status;
+  const badgeText = { queued:'Queued', working:'Forging…', done:'Done', error:'Error' }[rec.status] || rec.status;
+
+  row.innerHTML = `
+    <div class="top-line">
+      <div class="meta">
+        <span class="fico">${rec.status==='done' ? '✅' : rec.status==='error' ? '⚠️' : '🎞️'}</span>
+        <span class="fname" title="${rec.name}">${rec.name}</span>
+        <span class="fsize">${fmtBytes(rec.size)}</span>
+      </div>
+      <div class="actions">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        ${rec.status==='done' ? `<a class="dl-link" download="${rec.outName}" href="${rec.outUrl}">⬇ Download</a>` : ''}
+        ${rec.status!=='working' ? `<button class="icon-btn" data-action="remove" title="Remove">✕</button>` : ''}
+      </div>
+    </div>
+    ${rec.status==='working' ? `
+      <div class="stage-line"><span>${rec.stage}</span><span>${Math.round(rec.progress*100)}% · ETA ${fmtTime(rec.eta)}</span></div>
+      <div class="meter"><div class="fill" style="width:${Math.round(rec.progress*100)}%"></div></div>
+    ` : ''}
+    ${rec.status==='done' ? `
+      <div class="size-compare">
+        <span>In: <b>${fmtBytes(rec.size)}</b></span>
+        <span class="arrow">→</span>
+        <span>Out: <b>${fmtBytes(rec.outputSize)}</b></span>
+        <span class="saved">${rec.outputSize < rec.size ? '−' : '+'}${Math.abs(Math.round((1 - rec.outputSize/rec.size)*100))}% size</span>
+      </div>
+    ` : ''}
+    ${rec.status==='error' ? `<div class="err-msg">${rec.error}</div>` : ''}
+  `;
+
+  row.querySelector('[data-action="remove"]')?.addEventListener('click', () => {
+    filesState = filesState.filter(f => f.id !== rec.id);
+    renderQueue();
+    refreshForgeButton();
+  });
+  return row;
+}
+function updateFile(id, patch){
+  const rec = filesState.find(f => f.id === id);
+  if(!rec) return;
+  Object.assign(rec, patch);
+  const row = queueList.querySelector(`.file-row[data-id="${id}"]`);
+  if(row) row.replaceWith(buildFileRow(rec));
+  updateTotals();
+}
+function updateTotals(){
+  const done = filesState.filter(f => f.status === 'done');
+  if(!done.length){ totalsLabel.textContent = ''; btnZip.style.display = 'none'; return; }
+  const inTotal = done.reduce((a,f) => a+f.size, 0);
+  const outTotal = done.reduce((a,f) => a+f.outputSize, 0);
+  const savedPct = Math.round((1 - outTotal/inTotal) * 100);
+  totalsLabel.innerHTML = `${done.length} done · <b>${fmtBytes(inTotal)}</b> → <b>${fmtBytes(outTotal)}</b> (${savedPct >= 0 ? '−' : '+'}${Math.abs(savedPct)}%)`;
+  btnZip.style.display = done.length > 1 ? 'inline-block' : 'none';
 }
 
-function buildArgs(item, inputName, outputName){
-  const s = item.settings;
-  const args = ["-i", inputName];
+/* ============================= Encoding ============================= */
+function buildFfmpegArgs(inName, outName, duration){
   const vf = [];
+  if(settings.resolution === '1080') vf.push('scale=-2:1080');
+  else if(settings.resolution === '720') vf.push('scale=-2:720');
+  else if(settings.resolution === '480') vf.push('scale=-2:480');
+  else if(settings.resolution === 'vertical') vf.push('scale=1080:1920:force_original_aspect_ratio=increase','crop=1080:1920');
 
-  if(s.vertical){
-    vf.push(`scale=${s.width}:${s.height}:force_original_aspect_ratio=decrease`);
-    vf.push(`pad=${s.width}:${s.height}:(ow-iw)/2:(oh-ih)/2:color=black`);
-  }else if(s.resolution !== "original"){
-    const h = { "1080p":1080, "720p":720, "480p":480 }[s.resolution];
-    vf.push(`scale=-2:${h}`);
+  if(settings.fps !== 'original') vf.push(`fps=${settings.fps}`);
+
+  const args = ['-i', inName];
+  if(vf.length) args.push('-vf', vf.join(','));
+
+  const codec = settings.codec === 'h265' ? 'libx265' : 'libx264';
+  args.push('-c:v', codec);
+
+  const useBitrate = settings.mode === 'bitrate' && settings.targetSizeMB && duration && !crfTouchedManually;
+  if(useBitrate){
+    const audioKbps = settings.audioMode === 'remove' ? 0 : (settings.audioBitrate || 128);
+    let videoKbps = Math.floor((settings.targetSizeMB * 8192) / duration - audioKbps);
+    videoKbps = Math.max(videoKbps, 150);
+    args.push('-b:v', `${videoKbps}k`, '-maxrate', `${Math.floor(videoKbps*1.45)}k`, '-bufsize', `${videoKbps*2}k`);
+  } else {
+    args.push('-crf', String(settings.crf));
   }
-  if(s.fps !== "original") vf.push(`fps=${s.fps}`);
-  if(vf.length) args.push("-vf", vf.join(","));
+  args.push('-preset', 'veryfast');
+  args.push('-pix_fmt', 'yuv420p');
 
-  args.push("-c:v", s.codec === "h265" ? "libx265" : "libx264");
-
-  let mode = s.mode;
-  let videoKbps = null;
-  if(mode === "target-size"){
-    videoKbps = computeBitrateKbps(item.duration, s.targetMB, s.audioMode === "remove" ? 0 : s.audioBitrate);
-    if(videoKbps == null) mode = "crf"; // fallback if duration unknown
-  }else if(mode === "fixed-bitrate"){
-    videoKbps = s.targetKbps;
-  }
-
-  if(mode === "target-size" || mode === "fixed-bitrate"){
-    args.push("-b:v", `${videoKbps}k`, "-maxrate", `${Math.round(videoKbps*1.3)}k`, "-bufsize", `${videoKbps*2}k`);
-  }else{
-    args.push("-crf", String(s.crf));
-  }
-
-  args.push("-preset", s.codec === "h265" ? "fast" : "veryfast");
-  if(s.codec === "h265") args.push("-tag:v", "hvc1");
-
-  if(s.audioMode === "remove"){
-    args.push("-an");
-  }else{
-    args.push("-c:a", "aac", "-b:a", `${s.audioBitrate}k`);
-    if(s.mono) args.push("-ac", "1");
+  if(settings.audioMode === 'remove'){
+    args.push('-an');
+  } else {
+    const ab = settings.audioMode === 'compress' ? (settings.audioBitrate || 96) : 160;
+    args.push('-c:a', 'aac', '-b:a', `${ab}k`);
   }
 
-  args.push("-movflags", "+faststart", "-map_metadata", "-1", "-pix_fmt", "yuv420p", outputName);
+  args.push('-map_metadata', '-1', '-movflags', '+faststart', outName);
   return args;
 }
 
-function buildOutputName(item){
-  const base = item.name.replace(/\.[^.]+$/, "");
-  const preset = item.presetKey || "custom";
-  const ts = new Date().toISOString().replace(/[-:T.Z]/g,"").slice(0,14);
-  return `${base}_${preset}_${ts}.mp4`;
+async function probeDuration(inName){
+  currentDuration = null;
+  try{ await ffmpeg.exec(['-i', inName]); }catch(e){ /* expected: no output specified */ }
+  return currentDuration;
 }
 
-/* ============================================================
-   UI UPDATES
-   ============================================================ */
-function updateBadge(item){
-  const el = $("#card-"+item.id); if(!el) return;
-  const b = el.querySelector('[data-role=badge]');
-  b.className = "badge " + badgeClass(item.status);
-  b.textContent = badgeLabel(item);
-}
+async function processFile(rec){
+  activeId = rec.id;
+  const ext = (rec.name.split('.').pop() || 'mp4').toLowerCase();
+  const inName = `in_${rec.id}.${ext}`;
+  const outName = `out_${rec.id}.mp4`;
+  const startTime = performance.now();
 
-function setStage(item, stage){
-  item.stage = stage;
-  updateBadge(item);
-  const el = $("#card-"+item.id); if(!el) return;
-  const s = el.querySelector('[data-role=stage]');
-  if(s) s.textContent = stage;
-}
-
-function showProgress(item, show){
-  const el = $("#card-"+item.id); if(!el) return;
-  el.querySelector('[data-role=progresswrap]').style.display = show ? "block" : "none";
-}
-
-function updateJobProgress(id, fraction){
-  const item = items.get(id); if(!item) return;
-  item.progress = fraction;
-  const el = $("#card-"+id); if(!el) return;
-  const pct = Math.round(fraction*100);
-  el.querySelector('[data-role=fill]').style.width = pct + "%";
-  el.querySelector('[data-role=pct]').textContent = pct + "%";
-
-  const elapsed = (performance.now() - item.startedAt) / 1000;
-  if(fraction > 0.03){
-    const eta = elapsed / fraction * (1 - fraction);
-    el.querySelector('[data-role=eta]').textContent = "ETA " + fmtTime(eta);
-  }
-
-  const s = item.settings;
-  let estKbps = s.mode === "crf" ? null : (s.mode === "fixed-bitrate" ? s.targetKbps : computeBitrateKbps(item.duration, s.targetMB, s.audioBitrate));
-  if(estKbps && item.duration){
-    const estBytes = (estKbps*1000/8) * item.duration;
-    el.querySelector('[data-role=livesize]').textContent = "Target ≈ " + fmtSize(estBytes);
-  }
-}
-
-function renderResult(item){
-  const el = $("#card-"+item.id); if(!el) return;
-  const url = URL.createObjectURL(item.outputBlob);
-  const reduction = item.size > 0 ? Math.round((1 - item.outputSize/item.size) * 100) : 0;
-  el.querySelector('[data-role=result]').innerHTML = `
-    <div class="size-compare">
-      <span class="size-pill">${fmtSize(item.size)}</span>
-      <span class="size-arrow">→</span>
-      <span class="size-pill after">${fmtSize(item.outputSize)}</span>
-      <span class="size-reduction">${reduction >= 0 ? "−"+reduction+"%" : "+"+Math.abs(reduction)+"%"}</span>
-    </div>
-    <div class="result-row">
-      <video src="${url}" controls preload="metadata"></video>
-      <a class="btn btn-accent btn-sm" href="${url}" download="${item.outputName}">⬇ Download</a>
-    </div>
-  `;
-  refreshDownloadAllState();
-}
-
-function renderError(item){
-  const el = $("#card-"+item.id); if(!el) return;
-  el.querySelector('[data-role=result]').innerHTML = `<div class="error-banner">⚠️ ${escapeHtml(item.error)}</div>`;
-}
-
-function refreshDownloadAllState(){
-  const doneCount = [...items.values()].filter(i => i.status === "done").length;
-  downloadAllBtn.disabled = doneCount === 0;
-  downloadAllBtn.textContent = doneCount > 1 ? `⬇ Download All (ZIP) · ${doneCount}` : "⬇ Download All (ZIP)";
-}
-
-downloadAllBtn.addEventListener("click", async () => {
-  const done = [...items.values()].filter(i => i.status === "done");
-  if(!done.length) return;
-  if(done.length === 1){
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(done[0].outputBlob);
-    a.download = done[0].outputName;
-    a.click();
-    return;
-  }
-  if(typeof JSZip === "undefined"){ toast("ZIP library unavailable — downloading files individually.", "error");
-    done.forEach(i => { const a=document.createElement("a"); a.href=URL.createObjectURL(i.outputBlob); a.download=i.outputName; a.click(); });
-    return;
-  }
-  downloadAllBtn.disabled = true;
-  const originalText = downloadAllBtn.textContent;
-  downloadAllBtn.textContent = "Zipping…";
   try{
-    const zip = new JSZip();
-    done.forEach(i => zip.file(i.outputName, i.outputBlob));
-    const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions:{level:6} });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `video_forge_export_${Date.now()}.zip`;
-    a.click();
+    updateFile(rec.id, { status:'working', stage:'Reading file', progress:0, eta:null });
+    const data = await fetchFile(rec.file);
+    await ffmpeg.writeFile(inName, data);
+
+    let duration = null;
+    if(settings.mode === 'bitrate' && settings.targetSizeMB && !crfTouchedManually){
+      updateFile(rec.id, { stage:'Analyzing clip length', progress:0.02 });
+      duration = await probeDuration(inName);
+    }
+
+    updateFile(rec.id, { stage:'Encoding', progress:0.03 });
+    const args = buildFfmpegArgs(inName, outName, duration);
+
+    // live ETA ticker based on progress + elapsed time
+    const etaInterval = setInterval(() => {
+      const r = filesState.find(f => f.id === rec.id);
+      if(!r || r.status !== 'working') return;
+      const elapsed = (performance.now() - startTime) / 1000;
+      const eta = r.progress > 0.02 ? (elapsed / r.progress) * (1 - r.progress) : null;
+      updateFile(rec.id, { eta });
+    }, 700);
+
+    try{
+      await ffmpeg.exec(args);
+    } finally {
+      clearInterval(etaInterval);
+    }
+
+    updateFile(rec.id, { stage:'Finalizing', progress:0.99 });
+    const outData = await ffmpeg.readFile(outName);
+    const blob = new Blob([outData.buffer], { type:'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const outName2 = `${sanitizeName(rec.name)}_${selectedPreset}_${timestamp}.mp4`;
+
+    updateFile(rec.id, {
+      status:'done', progress:1, stage:'Complete',
+      outputBlob: blob, outputSize: blob.size, outUrl: url, outName: outName2
+    });
+
+    try{ await ffmpeg.deleteFile(inName); }catch(e){}
+    try{ await ffmpeg.deleteFile(outName); }catch(e){}
   }catch(err){
-    console.error(err);
-    toast("Couldn't build the ZIP file.", "error");
+    const raw = (logBuffer.slice(-6).join(' ') + ' ' + (err?.message || '')).trim();
+    updateFile(rec.id, { status:'error', error: humanError(raw), progress:0 });
   }finally{
-    downloadAllBtn.disabled = false;
-    downloadAllBtn.textContent = originalText;
+    activeId = null;
+  }
+}
+
+async function runQueue(){
+  if(processing || !engineReady) return;
+  const pending = filesState.filter(f => f.status === 'queued');
+  if(!pending.length) return;
+  processing = true;
+  refreshForgeButton();
+  for(const rec of pending){
+    if(!filesState.find(f => f.id === rec.id)) continue; // removed mid-run
+    await processFile(rec);
+  }
+  processing = false;
+  refreshForgeButton();
+}
+
+/* ============================= Buttons ============================= */
+btnForge.addEventListener('click', runQueue);
+btnClear.addEventListener('click', () => {
+  if(processing) return;
+  filesState.forEach(f => { if(f.outUrl) URL.revokeObjectURL(f.outUrl); });
+  filesState = [];
+  renderQueue();
+  refreshForgeButton();
+});
+btnZip.addEventListener('click', async () => {
+  btnZip.disabled = true;
+  btnZip.textContent = 'Zipping…';
+  try{
+    const { default: JSZip } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+    const zip = new JSZip();
+    filesState.filter(f => f.status === 'done').forEach(f => zip.file(f.outName, f.outputBlob));
+    const blob = await zip.generateAsync({ type:'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `VideoForge_Batch_${Date.now()}.zip`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }catch(e){
+    alert("Couldn't build the zip — try downloading files individually instead.");
+  }finally{
+    btnZip.disabled = false;
+    btnZip.textContent = '⬇ Download all (.zip)';
   }
 });
+
+function refreshForgeButton(){
+  const hasQueued = filesState.some(f => f.status === 'queued');
+  btnForge.disabled = !engineReady || !hasQueued || processing;
+  btnForge.textContent = processing ? '🔥 Forging…' : '🔥 Forge It';
+  engineDot.classList.toggle('busy', processing);
+  if(!processing) engineDot.classList.toggle('ready', engineReady);
+}
+
+/* ============================= Init ============================= */
+renderPresets();
+applyPreset('discord');
+initEngine();
 </script>
 </body>
 </html>
-
