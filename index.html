@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Forge - Compress &amp; Convert, Right in Your Browser</title>
+<title>Video Forge — Compress &amp; Convert, Right in Your Browser</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <style>
@@ -314,6 +314,22 @@
 
 <main>
 
+  <div id="localFileWarning" class="glass" style="display:none;padding:16px 18px;margin-bottom:16px;border-color:rgba(255,200,87,0.3);">
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <div style="font-size:18px;">⚠️</div>
+      <div style="font-size:13px;line-height:1.6;color:var(--text-dim);">
+        <div style="color:var(--text);font-weight:650;margin-bottom:4px;">This page was opened directly from disk (file://)</div>
+        Browsers block the compression engine's worker from loading under a bare <code>file://</code> URL for security reasons — this isn't a bug, it's a fixed browser restriction. Video Forge will work normally once served over http(s), e.g.:
+        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <code id="serveCmd" style="background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:7px;font-size:12px;">python3 -m http.server 8000</code>
+          <button class="btn btn-ghost btn-sm" id="copyServeCmd" type="button">Copy</button>
+          <span style="color:var(--text-dimmer);">then open the printed localhost link</span>
+        </div>
+        <div style="margin-top:6px;color:var(--text-dimmer);">Or just push this file to a GitHub repo and enable GitHub Pages — that's the deployment this app is built for.</div>
+      </div>
+    </div>
+  </div>
+
   <div id="dropzone" class="glass">
     <div class="row">
       <div class="glyph">📥</div>
@@ -339,9 +355,7 @@
 
   <div id="footNote">
     <div><b>How it works:</b> Video Forge runs a real build of FFmpeg compiled to WebAssembly, entirely on your device. Nothing is uploaded anywhere.</div>
-    <div style="margin-top:4px;">Encoding runs on CPU via WebAssembly - browsers don't yet expose GPU video encoding to page scripts, so presets are tuned around the fastest software encoder settings that still hold quality.
-      Made with love by 0din
-    </div>
+    <div style="margin-top:4px;">Encoding runs on CPU via WebAssembly — browsers don't yet expose GPU video encoding to page scripts, so presets are tuned around the fastest software encoder settings that still hold quality.</div>
   </div>
 
 </main>
@@ -378,6 +392,8 @@ const CRF_LABELS = [
   {v:35, t:"Aggressive"},
   {v:45, t:"Max compression"},
 ];
+
+const isFileProtocol = location.protocol === "file:";
 
 let ffmpeg = null;
 let ffmpegReady = false;
@@ -446,6 +462,16 @@ function setEngineStatus(state, label){
 
 function initEngine(){
   if(ffmpegLoadPromise) return ffmpegLoadPromise;
+
+  if(isFileProtocol){
+    setEngineStatus("error", "Can't run from file://");
+    engineToastText.textContent = "Serve over http(s) to use the engine — see the notice above.";
+    engineToast.classList.add("show");
+    ffmpegLoadPromise = Promise.reject(new Error("file-protocol"));
+    ffmpegLoadPromise.catch(()=>{}); // prevent unhandled rejection noise
+    return ffmpegLoadPromise;
+  }
+
   setEngineStatus("loading", "Loading engine…");
   engineToast.classList.add("show");
 
@@ -489,8 +515,22 @@ function initEngine(){
   return ffmpegLoadPromise;
 }
 
+if(isFileProtocol){
+  const banner = $("#localFileWarning");
+  banner.style.display = "block";
+  const copyBtn = $("#copyServeCmd");
+  copyBtn?.addEventListener("click", () => {
+    navigator.clipboard?.writeText("python3 -m http.server 8000").then(()=>{
+      copyBtn.textContent = "Copied";
+      setTimeout(()=>copyBtn.textContent = "Copy", 1500);
+    });
+  });
+  setEngineStatus("error", "Serve over http(s) to run");
+}
+
 // Warm the engine in the background as soon as the browser is idle,
 // so it's typically ready before the user finishes picking a preset.
+// (Skipped automatically under file:// — see initEngine().)
 if("requestIdleCallback" in window){
   requestIdleCallback(() => initEngine().catch(()=>{}), { timeout: 3000 });
 }else{
@@ -906,6 +946,7 @@ async function pumpQueue(){
 
 function friendlyError(err){
   const msg = String(err?.message || err || "");
+  if(msg === "file-protocol") return "Can't load the engine from a file:// page — serve this file over http(s) (see the notice above the drop zone) and try again.";
   if(/memory|out of memory|allocat/i.test(msg)) return "Ran out of memory while encoding. Try a lower resolution or a smaller file.";
   if(/network|fetch/i.test(msg)) return "A network error interrupted processing. Check your connection and try again.";
   return "Something went wrong while encoding this file. Try different settings or a different file.";
@@ -1083,3 +1124,4 @@ downloadAllBtn.addEventListener("click", async () => {
 </script>
 </body>
 </html>
+
