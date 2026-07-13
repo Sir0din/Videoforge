@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Forge — Shrink your clips for Discord, Twitch &amp; TikTok</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0a0b0f;
+    --void-2:#101219;
+    --panel:rgba(255,255,255,.045);
+    --panel-strong:rgba(255,255,255,.07);
+    --border:rgba(255,255,255,.09);
+    --border-hi:rgba(255,255,255,.18);
+    --ember:#ff7a45;
+    --ember-hot:#ffb347;
+    --ember-dim:#c9531f;
+    --cyan:#5eead4;
+    --text:#f5f3ef;
+    --muted:#9a9ba5;
+    --muted-2:#6c6d78;
+    --danger:#ff5c5c;
+    --success:#4ade80;
+    --radius:16px;
+    --radius-sm:10px;
+    --font-display:'Rajdhani',sans-serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 700px at 15% -10%, rgba(255,122,69,.09), transparent 60%),
+      radial-gradient(900px 600px at 100% 0%, rgba(94,234,212,.06), transparent 55%),
+      var(--void);
+    color:var(--text);
+    font-family:var(--font-body);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(255,122,69,.35);}
+  :focus-visible{outline:2px solid var(--cyan); outline-offset:2px; border-radius:6px;}
+  a{color:var(--cyan);}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand .mark{
+    width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:22px;background:linear-gradient(155deg, rgba(255,122,69,.22), rgba(255,122,69,.02));
+    border:1px solid var(--border-hi);
+    box-shadow:0 0 26px rgba(255,122,69,.18) inset, 0 4px 18px rgba(0,0,0,.35);
+  }
+  .brand h1{font-family:var(--font-display);font-weight:700;font-size:24px;letter-spacing:.3px;margin:0;
+    background:linear-gradient(90deg,#fff, #ffd8b8 60%, var(--ember));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .brand .tag{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .status-pill{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--muted);
+    border:1px solid var(--border);padding:6px 12px;border-radius:999px;background:var(--panel);
+    display:flex;align-items:center;gap:8px;
+  }
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--muted-2);}
+  .status-dot.ready{background:var(--success);box-shadow:0 0 8px var(--success);}
+  .status-dot.busy{background:var(--ember);box-shadow:0 0 8px var(--ember);animation:pulse 1.1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  section.panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:22px;margin-bottom:22px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  h2.section-title{
+    font-family:var(--font-display);font-size:14px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--muted);font-weight:600;margin:0 0 14px;display:flex;align-items:center;gap:8px;
+  }
+  h2.section-title .n{color:var(--ember);}
+  #dropzone{
+    border:1.5px dashed var(--border-hi);border-radius:var(--radius);padding:44px 24px;text-align:center;cursor:pointer;
+    transition:border-color .18s ease, background .18s ease, transform .15s ease;
+    background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
+  }
+  #dropzone:hover{border-color:rgba(255,122,69,.5); background:rgba(255,122,69,.04);}
+  #dropzone.dragover{border-color:var(--ember); background:rgba(255,122,69,.09); transform:scale(1.005);}
+  #dropzone .flame{font-size:38px;display:block;margin-bottom:10px;filter:drop-shadow(0 0 14px rgba(255,122,69,.45));}
+  #dropzone .primary{font-family:var(--font-display);font-size:19px;font-weight:600;margin-bottom:4px;}
+  #dropzone .secondary{font-size:13px;color:var(--muted);}
+  #fileInput{display:none;}
+  .preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  @media(max-width:720px){.preset-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:460px){.preset-grid{grid-template-columns:1fr;}}
+  .preset-card{
+    text-align:left;border:1px solid var(--border);background:var(--panel-strong);border-radius:var(--radius-sm);
+    padding:14px;cursor:pointer;color:var(--text);font-family:var(--font-body);
+    transition:border-color .15s, transform .12s, box-shadow .15s;display:flex;flex-direction:column;gap:4px;
+  }
+  .preset-card:hover{transform:translateY(-2px);border-color:var(--border-hi);}
+  .preset-card.active{
+    border-color:var(--ember);box-shadow:0 0 0 1px var(--ember), 0 8px 24px rgba(255,122,69,.15);
+    background:linear-gradient(160deg, rgba(255,122,69,.13), rgba(255,122,69,.02));
+  }
+  .preset-card .icon{font-size:22px;}
+  .preset-card .title{font-family:var(--font-display);font-weight:600;font-size:16px;}
+  .preset-card .desc{font-size:12px;color:var(--muted);line-height:1.4;}
+  .preset-card .target{font-family:var(--font-mono);font-size:11px;color:var(--cyan);margin-top:2px;}
+  .adv-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .adv-toggle .chev{transition:transform .2s ease;color:var(--muted);}
+  .adv-toggle.open .chev{transform:rotate(180deg);}
+  .adv-body{display:none;margin-top:16px;}
+  .adv-body.open{display:block;}
+  .adv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media(max-width:560px){.adv-grid{grid-template-columns:1fr;}}
+  .field label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;}
+  select, .crf-row input[type=range]{width:100%;}
+  select{
+    background:var(--void-2);color:var(--text);border:1px solid var(--border);border-radius:8px;
+    padding:9px 10px;font-family:var(--font-body);font-size:13.5px;
+  }
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+  .seg button{
+    flex:1;background:transparent;border:none;color:var(--muted);padding:9px 6px;font-size:13px;cursor:pointer;
+    font-family:var(--font-body);border-right:1px solid var(--border);
+  }
+  .seg button:last-child{border-right:none;}
+  .seg button.active{background:rgba(255,122,69,.16);color:var(--ember-hot);font-weight:600;}
+  .crf-row{display:flex;align-items:center;gap:10px;}
+  .crf-row input[type=range]{accent-color:var(--ember);}
+  .crf-val{font-family:var(--font-mono);font-size:13px;color:var(--cyan);min-width:28px;text-align:right;}
+  .crf-presets{display:flex;gap:6px;margin-top:8px;}
+  .crf-presets button{
+    font-size:11px;padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:transparent;
+    color:var(--muted);cursor:pointer;font-family:var(--font-mono);
+  }
+  .crf-presets button:hover{border-color:var(--border-hi);color:var(--text);}
+  #queueEmpty{color:var(--muted-2);font-size:13px;text-align:center;padding:18px 0;}
+  .file-row{
+    border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;
+    background:rgba(255,255,255,.02);
+  }
+  .file-row .top-line{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;}
+  .file-row .meta{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+  .file-row .fico{font-size:20px;flex-shrink:0;}
+  .file-row .fname{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px;}
+  .file-row .fsize{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);flex-shrink:0;}
+  .file-row .actions{display:flex;gap:8px;align-items:center;}
+  .file-row .meta-line{font-family:var(--font-mono);font-size:11px;color:var(--muted-2);margin-top:8px;}
+  .icon-btn{
+    background:transparent;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;
+  }
+  .icon-btn:hover{border-color:var(--border-hi);color:var(--text);}
+  .badge{font-family:var(--font-mono);font-size:10.5px;padding:3px 9px;border-radius:999px;letter-spacing:.3px;}
+  .badge.queued{background:rgba(154,155,165,.15);color:var(--muted);}
+  .badge.analyzing{background:rgba(94,234,212,.15);color:var(--cyan);}
+  .badge.working{background:rgba(255,122,69,.18);color:var(--ember-hot);}
+  .badge.done{background:rgba(74,222,128,.15);color:var(--success);}
+  .badge.error{background:rgba(255,92,92,.15);color:var(--danger);}
+  .stage-line{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin:10px 0 5px;font-family:var(--font-mono);}
+  .meter{height:9px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden;position:relative;border:1px solid var(--border);}
+  .meter .fill{
+    height:100%;width:0%;border-radius:999px;
+    background:linear-gradient(90deg, var(--ember-dim), var(--ember) 55%, var(--ember-hot));
+    background-size:200% 100%;animation:flow 1.8s linear infinite;box-shadow:0 0 10px rgba(255,122,69,.5);
+    transition:width .25s ease;
+  }
+  @keyframes flow{0%{background-position:0% 0;}100%{background-position:-200% 0;}}
+  .size-compare{display:flex;gap:16px;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);flex-wrap:wrap;}
+  .size-compare b{color:var(--text);}
+  .size-compare .arrow{color:var(--muted-2);}
+  .size-compare .saved{color:var(--success);}
+  .err-msg{font-size:12px;color:var(--danger);margin-top:8px;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.25);padding:8px 10px;border-radius:8px;}
+  .dl-link{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--void);background:var(--success);
+    padding:6px 12px;border-radius:7px;text-decoration:none;font-weight:600;
+  }
+  .run-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:4px;}
+  .btn-forge{
+    font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:.4px;
+    background:linear-gradient(160deg, var(--ember-hot), var(--ember) 55%, var(--ember-dim));
+    color:#1a0d05;border:none;padding:13px 26px;border-radius:11px;cursor:pointer;
+    box-shadow:0 6px 22px rgba(255,122,69,.28);transition:transform .12s, box-shadow .12s;
+  }
+  .btn-forge:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(255,122,69,.4);}
+  .btn-forge:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--border);color:var(--muted);padding:11px 18px;border-radius:11px;
+    cursor:pointer;font-family:var(--font-body);font-size:13.5px;
+  }
+  .btn-ghost:hover{border-color:var(--border-hi);color:var(--text);}
+  .btn-ghost:disabled{opacity:.35;cursor:not-allowed;}
+  .totals{font-family:var(--font-mono);font-size:12px;color:var(--muted);}
+  .totals b{color:var(--cyan);}
+  .banner{
+    border:1px solid rgba(255,179,71,.35);background:rgba(255,179,71,.08);color:#ffd9a8;
+    border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;
+  }
+  #loadOverlay{
+    position:fixed;inset:0;background:rgba(6,7,10,.86);backdrop-filter:blur(6px);z-index:50;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;transition:opacity .3s ease;
+  }
+  #loadOverlay.hidden{opacity:0;pointer-events:none;}
+  .anvil-spin{font-size:44px;animation:flicker 1.6s ease-in-out infinite;}
+  @keyframes flicker{0%,100%{transform:scale(1) rotate(-2deg);opacity:1;}50%{transform:scale(1.08) rotate(2deg);opacity:.85;}}
+  #loadOverlay .msg{font-family:var(--font-display);font-size:16px;color:var(--muted);letter-spacing:.5px;}
+  #loadOverlay .sub{font-size:12px;color:var(--muted-2);max-width:320px;text-align:center;}
+  footer.sig{text-align:center;margin-top:36px;font-size:12px;color:var(--muted-2);letter-spacing:.3px;}
+  footer.sig span{color:var(--ember);text-shadow:0 0 10px rgba(255,122,69,.4);}
+  @media (prefers-reduced-motion: reduce){
+    .status-dot.busy, .meter .fill, .anvil-spin{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div id="loadOverlay" class="hidden">
+  <div class="anvil-spin">🔥</div>
+  <div class="msg">Igniting the forge…</div>
+  <div class="sub">Loading the encoding engine into your browser. This happens once and everything after runs fully offline, on your device.</div>
+</div>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">🎬</div>
+      <div>
+        <h1>Video Forge</h1>
+        <div class="tag">Shrink clips for Discord, Twitch, TikTok &amp; more — right in your browser</div>
+      </div>
+    </div>
+    <div class="status-pill"><span class="status-dot" id="engineDot"></span><span id="engineLabel">Engine idle</span></div>
+  </header>
+
+  <div class="banner" id="bigFileBanner" style="display:none;"></div>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="n">01</span> Drop your clips</h2>
+    <div id="dropzone">
+      <span class="flame">🔥</span>
+      <div class="primary">Drag &amp; drop video files here</div>
+      <div class="secondary">or click to browse · MP4, MOV, MKV, WebM, AVI · processed locally, never uploaded</div>
+    </div>
+    <input type="file" id="fileInput" multiple accept="video/*,.mkv,.mov,.avi,.webm,.mp4">
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="n">02</span> Pick a forge preset</h2>
+    <div class="preset-grid" id="presetGrid"></div>
+  </section>
+
+  <section class="panel">
+    <div class="adv-toggle" id="advToggle">
+      <h2 class="section-title" style="margin:0;"><span class="n">03</span> Advanced settings</h2>
+      <span class="chev">▾</span>
+    </div>
+    <div class="adv-body" id="advBody">
+      <div class="adv-grid">
+        <div class="field">
+          <label>Resolution</label>
+          <select id="selResolution">
+            <option value="original">Original</option>
+            <option value="1080">1080p</option>
+            <option value="720">720p</option>
+            <option value="480">480p</option>
+            <option value="vertical">1080×1920 (vertical crop)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Frame rate</label>
+          <select id="selFps">
+            <option value="original">Original</option>
+            <option value="60">60 fps</option>
+            <option value="30">30 fps</option>
+            <option value="24">24 fps</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Codec</label>
+          <div class="seg" id="segCodec">
+            <button data-val="h264" class="active">H.264</button>
+            <button data-val="h265">H.265 (smaller)</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Audio</label>
+          <div class="seg" id="segAudio">
+            <button data-val="keep" class="active">Keep</button>
+            <button data-val="compress">Compress</button>
+            <button data-val="remove">Remove</button>
+          </div>
+        </div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Quality (CRF — lower is higher quality &amp; larger file) <span id="crfModeNote" style="color:var(--muted-2);"></span></label>
+          <div class="crf-row">
+            <input type="range" id="crfSlider" min="0" max="51" value="23">
+            <span class="crf-val" id="crfVal">23</span>
+          </div>
+          <div class="crf-presets">
+            <button data-crf="18">18 · High quality</button>
+            <button data-crf="23">23 · Balanced</button>
+            <button data-crf="28">28 · Compressed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="section-title"><span class="n">04</span> Queue &amp; output</h2>
+    <div id="queueEmpty">No clips loaded yet — drop a file above to get started.</div>
+    <div id="queueList"></div>
+
+    <div class="run-row">
+      <div style="display:flex;gap:10px;">
+        <button class="btn-forge" id="btnForge" disabled>🔥 Forge It</button>
+        <button class="btn-ghost" id="btnZip" style="display:none;">⬇ Download all (.zip)</button>
+        <button class="btn-ghost" id="btnClear">Clear queue</button>
+      </div>
+      <div class="totals" id="totalsLabel"></div>
+    </div>
+  </section>
+
+  <footer class="sig">Made with ❤️ by Odin — <span>an Odiverse × Gigaverse Labs collaboration</span></footer>
+</div>
+
+<!--
+  FFmpeg.wasm is loaded dynamically at runtime (see loadScript/loadVendorScripts
+  below) as classic UMD <script> tags, matching the official ffmpeg.wasm
+  "vanilla-app" browser example (no bundler, no ES modules). That example:
+  https://github.com/ffmpegwasm/ffmpeg.wasm/blob/main/apps/vanilla-app/public/transcode.html
+  After these load, `window.FFmpegWASM.FFmpeg` and `window.FFmpegUtil` are available globally.
+-->
+<script>
+'use strict';
+
+/* =============================================================================
+   VENDOR SCRIPT LOADER
+   -----------------------------------------------------------------------------
+   Injects the FFmpeg.wasm and JSZip UMD builds as classic <script> tags at
+   runtime and resolves once each has actually executed. Classic <script src>
+   tags (as opposed to ES module imports) are the officially-documented,
+   bundler-free way to use ffmpeg.wasm in a plain HTML page.
+   ============================================================================= */
+function loadScript(url){
+  return new Promise((resolve, reject) => {
+    const el = document.createElement('script');
+    el.src = url;
+    el.onload = () => resolve();
+    el.onerror = () => reject(new Error('Failed to load script: ' + url));
+    document.head.appendChild(el);
+  });
+}
+
+let vendorScriptsPromise = null;
+function loadVendorScripts(){
+  if(vendorScriptsPromise) return vendorScriptsPromise;
+  const ffmpegUrl = 'https://unpkg.com/@ffmpeg/ffmpeg' + '@' + '0.12.10' + '/dist/umd/ffmpeg.js';
+  const utilUrl = 'https://unpkg.com/@ffmpeg/util' + '@' + '0.12.1' + '/dist/umd/index.js';
+  const jszipUrl = 'https://cdn.jsdelivr.net/npm/jszip' + '@' + '3.10.1' + '/dist/jszip.min.js';
+  vendorScriptsPromise = Promise.all([
+    loadScript(ffmpegUrl),
+    loadScript(utilUrl),
+    loadScript(jszipUrl),
+  ]);
+  return vendorScriptsPromise;
+}
+
+/* =============================================================================
+   UTILITY FUNCTIONS
+   ============================================================================= */
+const Utils = (() => {
+  function formatBytes(bytes){
+    if(!bytes || bytes <= 0) return '0 B';
+    const units = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(bytes)/Math.log(1024));
+    return `${(bytes/Math.pow(1024,i)).toFixed(i===0?0:1)} ${units[i]}`;
+  }
+  function formatDuration(totalSeconds){
+    if(!isFinite(totalSeconds) || totalSeconds < 0) return '--:--';
+    const m = Math.floor(totalSeconds/60), s = Math.round(totalSeconds%60);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+  function sanitizeBaseName(name){
+    return name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9_\-]+/gi,'_').slice(0,60);
+  }
+  function timestampSlug(){
+    return new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  }
+  function humanizeError(raw){
+    const msg = (raw||'').toLowerCase();
+    if(msg.includes('invalid data') || msg.includes('moov atom') || msg.includes('could not find codec'))
+      return "This file looks corrupted or uses a format the engine can't read. Try re-exporting it, or use a different file.";
+    if(msg.includes('memory') || msg.includes('out of bounds') || msg.includes('abort'))
+      return "This file is too large for your browser to process in one go. Try a shorter clip, a lower resolution, or close other tabs to free up memory.";
+    if(msg.includes('no such file'))
+      return "The file couldn't be read. Try dropping it in again.";
+    return 'Something went wrong during encoding. Try a different preset, a lower resolution, or a smaller file.';
+  }
+  const ALLOWED_EXT = ['mp4','mov','mkv','webm','avi','m4v','flv'];
+  function getExtension(name){ return (name.split('.').pop() || '').toLowerCase(); }
+  function isSupportedVideo(name){ return ALLOWED_EXT.includes(getExtension(name)); }
+  return { formatBytes, formatDuration, sanitizeBaseName, timestampSlug, humanizeError, getExtension, isSupportedVideo };
+})();
+
+/* =============================================================================
+   COMPRESSION PROFILES  (pure data — no FFmpeg commands live here)
+   ============================================================================= */
+const CompressionProfiles = {
+  discord: {
+    key:'discord', label:'Discord Clip', icon:'💬', description:'Squeezes under the 8MB embed limit.', targetLabel:'Target ~8MB',
+    resolution:'720', fps:'30', codec:'h264', rateControlMode:'targetSize', targetSizeMB:8, quality:30, audioMode:'compress', audioBitrateKbps:64
+  },
+  twitter: {
+    key:'twitter', label:'X / Twitter Clip', icon:'🐦', description:'Balanced compression, up to 1080p.', targetLabel:'Target ~25MB',
+    resolution:'1080', fps:'original', codec:'h264', rateControlMode:'targetSize', targetSizeMB:25, quality:26, audioMode:'compress', audioBitrateKbps:128
+  },
+  twitch: {
+    key:'twitch', label:'Twitch Highlight', icon:'🎮', description:'High quality, keeps 60fps where possible.', targetLabel:'Minimal compression',
+    resolution:'original', fps:'original', codec:'h264', rateControlMode:'quality', targetSizeMB:null, quality:18, audioMode:'keep', audioBitrateKbps:160
+  },
+  tiktok: {
+    key:'tiktok', label:'TikTok Vertical', icon:'📱', description:'Auto-crops to 1080×1920, optimized bitrate.', targetLabel:'1080×1920',
+    resolution:'vertical', fps:'30', codec:'h264', rateControlMode:'quality', targetSizeMB:null, quality:23, audioMode:'compress', audioBitrateKbps:128
+  },
+  shorts: {
+    key:'shorts', label:'YouTube Shorts', icon:'🎥', description:'Vertical, social-ready balanced encode.', targetLabel:'1080×1920',
+    resolution:'vertical', fps:'30', codec:'h264', rateControlMode:'quality', targetSizeMB:null, quality:25, audioMode:'compress', audioBitrateKbps:128
+  },
+  ultra: {
+    key:'ultra', label:'Ultra Compress', icon:'💣', description:'Maximum shrink. Quality takes a back seat.', targetLabel:'Smallest possible file',
+    resolution:'480', fps:'24', codec:'h264', rateControlMode:'quality', targetSizeMB:null, quality:36, audioMode:'compress', audioBitrateKbps:48
+  }
+};
+
+/** Rough, clearly-labeled heuristic for pre-encode size estimates in quality (CRF) mode.
+ *  Real CRF output size depends on scene complexity and can't be known without encoding. */
+function estimateOutputBytes(profile, sourceBytes){
+  if(profile.rateControlMode === 'targetSize' && profile.targetSizeMB) return profile.targetSizeMB * 1024 * 1024;
+  const crfFactor = Math.max(0.12, 1 - (profile.quality/51) * 0.9);
+  const resFactor = { original:1, '1080':0.85, '720':0.6, '480':0.35, vertical:0.55 }[profile.resolution] ?? 1;
+  return Math.round(sourceBytes * crfFactor * resFactor);
+}
+
+/* =============================================================================
+   MEDIA ANALYZER — native <video> metadata, no FFmpeg needed for this step
+   ============================================================================= */
+const MediaAnalyzer = (() => {
+  function analyze(file){
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      const objectUrl = URL.createObjectURL(file);
+      const cleanup = () => URL.revokeObjectURL(objectUrl);
+      video.onloadedmetadata = () => {
+        resolve({ duration: video.duration || null, width: video.videoWidth || null, height: video.videoHeight || null });
+        cleanup();
+      };
+      video.onerror = () => { resolve({ duration:null, width:null, height:null }); cleanup(); };
+      video.src = objectUrl;
+    });
+  }
+  return { analyze };
+})();
+
+/* =============================================================================
+   UPLOAD MANAGER — owns the in-memory file queue
+   ============================================================================= */
+const UploadManager = (() => {
+  let idCounter = 0;
+  let queue = [];
+  function addFiles(fileList){
+    const added = [];
+    [...fileList].forEach((file) => {
+      const record = {
+        id: ++idCounter, file, name: file.name, size: file.size,
+        status:'queued', stage:'Waiting', progress:0, eta:null, speed:null,
+        duration:null, width:null, height:null, estimatedOutputBytes:null,
+        outputBlob:null, outputSize:null, outputUrl:null, outputName:null, error:null
+      };
+      if(!Utils.isSupportedVideo(file.name)){
+        record.status = 'error';
+        record.error = `".${Utils.getExtension(file.name)}" isn't a supported video format. Try MP4, MOV, MKV, WebM or AVI.`;
+      }
+      queue.push(record); added.push(record);
+    });
+    return added;
+  }
+  function remove(id){
+    const rec = queue.find(f => f.id === id);
+    if(rec && rec.outputUrl) URL.revokeObjectURL(rec.outputUrl);
+    queue = queue.filter(f => f.id !== id);
+  }
+  function clear(){
+    queue.forEach(f => { if(f.outputUrl) URL.revokeObjectURL(f.outputUrl); });
+    queue = [];
+  }
+  function getAll(){ return queue; }
+  function getById(id){ return queue.find(f => f.id === id); }
+  function update(id, patch){
+    const rec = queue.find(f => f.id === id);
+    if(rec) Object.assign(rec, patch);
+    return rec;
+  }
+  return { addFiles, remove, clear, getAll, getById, update };
+})();
+
+/* =============================================================================
+   FFMPEG ENGINE — the only section that talks to FFmpeg.wasm directly
+   -----------------------------------------------------------------------------
+   Loaded via classic UMD <script> tags above, so `FFmpegWASM` and
+   `FFmpegUtil` are already global by the time this runs. Single-threaded
+   core is used deliberately: it needs no COOP/COEP headers, so it works on
+   plain GitHub Pages hosting with zero server configuration.
+   ============================================================================= */
+const FFmpegEngine = (() => {
+  let ffmpeg = null;
+  let ready = false;
+  let loadPromise = null;
+  const logSubscribers = new Set();
+  const progressSubscribers = new Set();
+
+  function initEngine(){
+    if(loadPromise) return loadPromise;
+    loadPromise = (async () => {
+      await loadVendorScripts();
+
+      const { FFmpeg } = window.FFmpegWASM;
+      const { toBlobURL } = window.FFmpegUtil;
+      ffmpeg = new FFmpeg();
+
+      ffmpeg.on('log', ({ message }) => logSubscribers.forEach(fn => fn(message)));
+      ffmpeg.on('progress', ({ progress }) => progressSubscribers.forEach(fn => fn(progress)));
+
+      const baseURL = 'https://unpkg.com/@ffmpeg/core' + '@' + '0.12.6' + '/dist/umd';
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+      });
+      ready = true;
+    })();
+    return loadPromise;
+  }
+
+  function isReady(){ return ready; }
+  function onLog(fn){ logSubscribers.add(fn); return () => logSubscribers.delete(fn); }
+  function onProgress(fn){ progressSubscribers.add(fn); return () => progressSubscribers.delete(fn); }
+
+  async function writeInputFile(name, file){
+    const data = await FFmpegUtil.fetchFile(file);
+    await ffmpeg.writeFile(name, data);
+  }
+  async function execute(args){ return ffmpeg.exec(args); }
+  async function readOutputFile(name){ return ffmpeg.readFile(name); }
+  async function cleanupFiles(names){
+    for(const name of names){ try{ await ffmpeg.deleteFile(name); }catch(e){} }
+  }
+
+  return { initEngine, isReady, onLog, onProgress, writeInputFile, execute, readOutputFile, cleanupFiles };
+})();
+
+/* =============================================================================
+   PROGRESS MANAGER
+   ============================================================================= */
+const ProgressManager = (() => {
+  let activeFileId = null;
+  let encodeStartMs = null;
+  let onUpdateCallback = null;
+  let unsubLog = null, unsubProgress = null;
+
+  function begin(fileId, onUpdate){
+    activeFileId = fileId;
+    encodeStartMs = performance.now();
+    onUpdateCallback = onUpdate;
+
+    unsubProgress = FFmpegEngine.onProgress((progress) => {
+      if(activeFileId !== fileId) return;
+      const clamped = Math.max(0, Math.min(1, progress || 0));
+      const elapsedSec = (performance.now() - encodeStartMs) / 1000;
+      const eta = clamped > 0.02 ? (elapsedSec/clamped) * (1-clamped) : null;
+      emit({ progress: clamped, eta });
+    });
+
+    unsubLog = FFmpegEngine.onLog((message) => {
+      if(activeFileId !== fileId) return;
+      const speedMatch = message.match(/speed=\s*([\d.]+)x/);
+      if(speedMatch) emit({ speed: `${speedMatch[1]}×` });
+    });
+  }
+  function emit(partial){ if(onUpdateCallback) onUpdateCallback(partial); }
+  function end(){
+    if(unsubProgress) unsubProgress();
+    if(unsubLog) unsubLog();
+    unsubProgress = null; unsubLog = null; activeFileId = null; onUpdateCallback = null;
+  }
+  return { begin, end };
+})();
+
+/* =============================================================================
+   COMPRESSION CONTROLLER — turns (Profile + Advanced Settings) into FFmpeg args
+   ============================================================================= */
+const CompressionController = (() => {
+  let capturedProbeDuration = null;
+
+  function buildArgs({ profile, overrides, inputName, outputName, durationSec }){
+    const resolution = overrides.resolution ?? profile.resolution;
+    const fps = overrides.fps ?? profile.fps;
+    const codec = overrides.codec ?? profile.codec;
+    const audioMode = overrides.audioMode ?? profile.audioMode;
+    const audioBitrateKbps = overrides.audioBitrateKbps ?? profile.audioBitrateKbps;
+    const quality = overrides.quality ?? profile.quality;
+    const rateControlMode = overrides.rateControlModeOverride ?? profile.rateControlMode;
+
+    const vf = [];
+    if(resolution === '1080') vf.push('scale=-2:1080');
+    else if(resolution === '720') vf.push('scale=-2:720');
+    else if(resolution === '480') vf.push('scale=-2:480');
+    else if(resolution === 'vertical') vf.push('scale=1080:1920:force_original_aspect_ratio=increase','crop=1080:1920');
+    if(fps !== 'original') vf.push(`fps=${fps}`);
+
+    const args = ['-i', inputName];
+    if(vf.length) args.push('-vf', vf.join(','));
+    args.push('-c:v', codec === 'h265' ? 'libx265' : 'libx264');
+
+    const useTargetSize = rateControlMode === 'targetSize' && profile.targetSizeMB && durationSec;
+    if(useTargetSize){
+      const audioKbps = audioMode === 'remove' ? 0 : (audioBitrateKbps || 128);
+      let videoKbps = Math.floor((profile.targetSizeMB * 8192) / durationSec - audioKbps);
+      videoKbps = Math.max(videoKbps, 150);
+      args.push('-b:v', `${videoKbps}k`, '-maxrate', `${Math.floor(videoKbps*1.45)}k`, '-bufsize', `${videoKbps*2}k`);
+    } else {
+      args.push('-crf', String(quality));
+    }
+
+    args.push('-preset','veryfast','-pix_fmt','yuv420p');
+
+    if(audioMode === 'remove'){
+      args.push('-an');
+    } else {
+      const ab = audioMode === 'compress' ? (audioBitrateKbps || 96) : 160;
+      args.push('-c:a','aac','-b:a',`${ab}k`);
+    }
+
+    args.push('-map_metadata','-1','-movflags','+faststart', outputName);
+    return args;
+  }
+
+  async function probeDuration(inputName){
+    capturedProbeDuration = null;
+    const unsubscribe = FFmpegEngine.onLog((message) => {
+      const m = message.match(/Duration:\s*(\d\d):(\d\d):(\d\d)\.(\d\d)/);
+      if(m) capturedProbeDuration = (+m[1])*3600 + (+m[2])*60 + (+m[3]) + (+m[4])/100;
+    });
+    try{ await FFmpegEngine.execute(['-i', inputName]); }
+    catch(e){ /* expected: no output requested */ }
+    finally{ unsubscribe(); }
+    return capturedProbeDuration;
+  }
+
+  async function runJob({ record, profile, overrides, onProgressUpdate }){
+    const ext = Utils.getExtension(record.name) || 'mp4';
+    const inputName = `in_${record.id}.${ext}`;
+    const outputName = `out_${record.id}.mp4`;
+    const jobStart = performance.now();
+
+    await FFmpegEngine.writeInputFile(inputName, record.file);
+
+    let durationSec = record.duration;
+    const needsProbe = (overrides.rateControlModeOverride ?? profile.rateControlMode) === 'targetSize' && !durationSec;
+    if(needsProbe) durationSec = await probeDuration(inputName);
+
+    ProgressManager.begin(record.id, onProgressUpdate);
+    const args = buildArgs({ profile, overrides, inputName, outputName, durationSec });
+
+    try{ await FFmpegEngine.execute(args); }
+    finally{ ProgressManager.end(); }
+
+    const outputData = await FFmpegEngine.readOutputFile(outputName);
+    const blob = new Blob([outputData.buffer], { type:'video/mp4' });
+    await FFmpegEngine.cleanupFiles([inputName, outputName]);
+
+    return { blob, encodeDurationSec: (performance.now() - jobStart) / 1000 };
+  }
+
+  return { runJob, estimateOutputBytes };
+})();
+
+/* =============================================================================
+   DOWNLOAD MANAGER
+   ============================================================================= */
+const DownloadManager = (() => {
+  function buildOutputName(originalName, profileKey){
+    return `${Utils.sanitizeBaseName(originalName)}_${profileKey}_${Utils.timestampSlug()}.mp4`;
+  }
+  function triggerDownload(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+  async function downloadAllAsZip(records){
+    const zip = new JSZip();
+    records.forEach(r => zip.file(r.outputName, r.outputBlob));
+    const blob = await zip.generateAsync({ type:'blob' });
+    triggerDownload(blob, `VideoForge_Batch_${Date.now()}.zip`);
+  }
+  return { buildOutputName, triggerDownload, downloadAllAsZip };
+})();
+
+/* =============================================================================
+   UI LAYER
+   ============================================================================= */
+const UI = (() => {
+  const dom = {};
+  let selectedProfileKey = 'discord';
+  let overrides = {};
+  let qualityTouchedManually = false;
+  let isProcessing = false;
+  let warmupStarted = false;
+
+  function cacheDom(){
+    dom.dropzone = document.getElementById('dropzone');
+    dom.fileInput = document.getElementById('fileInput');
+    dom.presetGrid = document.getElementById('presetGrid');
+    dom.queueList = document.getElementById('queueList');
+    dom.queueEmpty = document.getElementById('queueEmpty');
+    dom.btnForge = document.getElementById('btnForge');
+    dom.btnZip = document.getElementById('btnZip');
+    dom.btnClear = document.getElementById('btnClear');
+    dom.totals = document.getElementById('totalsLabel');
+    dom.engineDot = document.getElementById('engineDot');
+    dom.engineLabel = document.getElementById('engineLabel');
+    dom.bigFileBanner = document.getElementById('bigFileBanner');
+    dom.loadOverlay = document.getElementById('loadOverlay');
+    dom.overlayMsg = dom.loadOverlay.querySelector('.msg');
+    dom.overlaySub = dom.loadOverlay.querySelector('.sub');
+    dom.advToggle = document.getElementById('advToggle');
+    dom.advBody = document.getElementById('advBody');
+    dom.selResolution = document.getElementById('selResolution');
+    dom.selFps = document.getElementById('selFps');
+    dom.segCodec = document.getElementById('segCodec');
+    dom.segAudio = document.getElementById('segAudio');
+    dom.crfSlider = document.getElementById('crfSlider');
+    dom.crfVal = document.getElementById('crfVal');
+    dom.crfModeNote = document.getElementById('crfModeNote');
+  }
+
+  function renderPresets(){
+    dom.presetGrid.innerHTML = '';
+    Object.values(CompressionProfiles).forEach((profile) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'preset-card' + (profile.key === selectedProfileKey ? ' active' : '');
+      card.innerHTML = `
+        <span class="icon">${profile.icon}</span>
+        <span class="title">${profile.label}</span>
+        <span class="desc">${profile.description}</span>
+        <span class="target">${profile.targetLabel}</span>`;
+      card.addEventListener('click', () => selectProfile(profile.key));
+      dom.presetGrid.appendChild(card);
+    });
+  }
+  function selectProfile(key){
+    selectedProfileKey = key;
+    overrides = {};
+    qualityTouchedManually = false;
+    syncAdvancedPanel();
+    renderPresets();
+    refreshQueueEstimates();
+  }
+
+  function syncAdvancedPanel(){
+    const profile = CompressionProfiles[selectedProfileKey];
+    dom.selResolution.value = overrides.resolution ?? profile.resolution;
+    dom.selFps.value = overrides.fps ?? profile.fps;
+    const codec = overrides.codec ?? profile.codec;
+    const audioMode = overrides.audioMode ?? profile.audioMode;
+    [...dom.segCodec.children].forEach(b => b.classList.toggle('active', b.dataset.val === codec));
+    [...dom.segAudio.children].forEach(b => b.classList.toggle('active', b.dataset.val === audioMode));
+    const quality = overrides.quality ?? profile.quality;
+    dom.crfSlider.value = quality;
+    dom.crfVal.textContent = quality;
+    updateCrfNote(profile);
+  }
+  function updateCrfNote(profile){
+    const usingTargetSize = profile.rateControlMode === 'targetSize' && profile.targetSizeMB && !qualityTouchedManually;
+    dom.crfModeNote.textContent = usingTargetSize
+      ? `— using target-size bitrate (${profile.targetSizeMB}MB); moving the slider switches to manual quality` : '';
+  }
+  function bindAdvancedPanel(){
+    dom.advToggle.addEventListener('click', () => {
+      dom.advToggle.classList.toggle('open');
+      dom.advBody.classList.toggle('open');
+    });
+    dom.selResolution.addEventListener('change', () => { overrides.resolution = dom.selResolution.value; refreshQueueEstimates(); });
+    dom.selFps.addEventListener('change', () => { overrides.fps = dom.selFps.value; });
+    dom.segCodec.addEventListener('click', (e) => {
+      const btn = e.target.closest('button'); if(!btn) return;
+      [...dom.segCodec.children].forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); overrides.codec = btn.dataset.val;
+    });
+    dom.segAudio.addEventListener('click', (e) => {
+      const btn = e.target.closest('button'); if(!btn) return;
+      [...dom.segAudio.children].forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); overrides.audioMode = btn.dataset.val;
+    });
+    dom.crfSlider.addEventListener('input', () => {
+      dom.crfVal.textContent = dom.crfSlider.value;
+      overrides.quality = +dom.crfSlider.value;
+      overrides.rateControlModeOverride = 'quality';
+      qualityTouchedManually = true;
+      updateCrfNote(CompressionProfiles[selectedProfileKey]);
+      refreshQueueEstimates();
+    });
+    document.querySelectorAll('.crf-presets button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        dom.crfSlider.value = btn.dataset.crf;
+        dom.crfSlider.dispatchEvent(new Event('input'));
+      });
+    });
+  }
+
+  function bindUpload(){
+    dom.dropzone.addEventListener('click', () => dom.fileInput.click());
+    dom.dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dom.dropzone.classList.add('dragover'); });
+    dom.dropzone.addEventListener('dragleave', () => dom.dropzone.classList.remove('dragover'));
+    dom.dropzone.addEventListener('drop', (e) => {
+      e.preventDefault(); dom.dropzone.classList.remove('dragover');
+      handleNewFiles(e.dataTransfer.files);
+    });
+    dom.fileInput.addEventListener('change', () => { handleNewFiles(dom.fileInput.files); dom.fileInput.value = ''; });
+  }
+
+  function handleNewFiles(fileList){
+    const added = UploadManager.addFiles(fileList);
+    const hasBigFile = added.some(f => f.size > 800*1024*1024);
+    if(hasBigFile){
+      dom.bigFileBanner.style.display = 'block';
+      dom.bigFileBanner.textContent = "⚠ One or more files are quite large. Big files can take a while and may strain your browser's memory — consider trimming clips first if you run into trouble.";
+    }
+    added.filter(f => f.status !== 'error').forEach(async (rec) => {
+      UploadManager.update(rec.id, { status:'analyzing', stage:'Reading file info' });
+      renderQueue();
+      const meta = await MediaAnalyzer.analyze(rec.file);
+      const profile = CompressionProfiles[selectedProfileKey];
+      const estimate = CompressionController.estimateOutputBytes(profile, rec.size);
+      UploadManager.update(rec.id, {
+        status:'queued', stage:'Waiting', duration: meta.duration, width: meta.width, height: meta.height,
+        estimatedOutputBytes: estimate
+      });
+      renderQueue();
+      refreshForgeButton();
+    });
+    warmEngine();
+    renderQueue();
+    refreshForgeButton();
+  }
+
+  function refreshQueueEstimates(){
+    const profile = CompressionProfiles[selectedProfileKey];
+    UploadManager.getAll().forEach((rec) => {
+      if(rec.status === 'done' || rec.status === 'error') return;
+      UploadManager.update(rec.id, { estimatedOutputBytes: CompressionController.estimateOutputBytes(profile, rec.size) });
+    });
+    renderQueue();
+  }
+
+  function renderQueue(){
+    const all = UploadManager.getAll();
+    dom.queueEmpty.style.display = all.length ? 'none' : 'block';
+    dom.queueList.innerHTML = '';
+    all.forEach(rec => dom.queueList.appendChild(buildFileRow(rec)));
+    updateTotals();
+  }
+  function buildFileRow(rec){
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.dataset.id = rec.id;
+    const badgeText = { queued:'Queued', analyzing:'Analyzing…', working:'Forging…', done:'Done', error:'Error' }[rec.status] || rec.status;
+    const icon = rec.status === 'done' ? '✅' : rec.status === 'error' ? '⚠️' : '🎞️';
+    const metaLine = rec.status !== 'error' ? `
+      <div class="meta-line">
+        ${rec.width ? `${rec.width}×${rec.height}` : '—'} ·
+        ${rec.duration ? Utils.formatDuration(rec.duration) : '—'} ·
+        est. output ${rec.estimatedOutputBytes ? Utils.formatBytes(rec.estimatedOutputBytes) : '—'}
+      </div>` : '';
+    const workingBlock = rec.status === 'working' ? `
+      <div class="stage-line">
+        <span>${rec.stage}${rec.speed ? ` · ${rec.speed} speed` : ''}</span>
+        <span>${Math.round(rec.progress*100)}% · ETA ${Utils.formatDuration(rec.eta)}</span>
+      </div>
+      <div class="meter"><div class="fill" style="width:${Math.round(rec.progress*100)}%"></div></div>` : '';
+    const doneBlock = rec.status === 'done' ? `
+      <div class="size-compare">
+        <span>In: <b>${Utils.formatBytes(rec.size)}</b></span>
+        <span class="arrow">→</span>
+        <span>Out: <b>${Utils.formatBytes(rec.outputSize)}</b></span>
+        <span class="saved">${rec.outputSize < rec.size ? '−' : '+'}${Math.abs(Math.round((1 - rec.outputSize/rec.size)*100))}% · encoded in ${Utils.formatDuration(rec.encodeDurationSec)}</span>
+      </div>` : '';
+    const errorBlock = rec.status === 'error' ? `<div class="err-msg">${rec.error}</div>` : '';
+
+    row.innerHTML = `
+      <div class="top-line">
+        <div class="meta">
+          <span class="fico">${icon}</span>
+          <span class="fname" title="${rec.name}">${rec.name}</span>
+          <span class="fsize">${Utils.formatBytes(rec.size)}</span>
+        </div>
+        <div class="actions">
+          <span class="badge ${rec.status}">${badgeText}</span>
+          ${rec.status === 'done' ? `<a class="dl-link" download="${rec.outputName}" href="${rec.outputUrl}">⬇ Download</a>` : ''}
+          ${rec.status !== 'working' ? `<button class="icon-btn" data-action="remove" title="Remove">✕</button>` : ''}
+        </div>
+      </div>
+      ${metaLine}${workingBlock}${doneBlock}${errorBlock}
+    `;
+    row.querySelector('[data-action="remove"]')?.addEventListener('click', () => {
+      UploadManager.remove(rec.id); renderQueue(); refreshForgeButton();
+    });
+    return row;
+  }
+  function patchFileRow(id, patch){
+    const rec = UploadManager.update(id, patch);
+    if(!rec) return;
+    const row = dom.queueList.querySelector(`.file-row[data-id="${id}"]`);
+    if(row) row.replaceWith(buildFileRow(rec));
+    updateTotals();
+  }
+  function updateTotals(){
+    const done = UploadManager.getAll().filter(f => f.status === 'done');
+    if(!done.length){ dom.totals.textContent = ''; dom.btnZip.style.display = 'none'; return; }
+    const inTotal = done.reduce((a,f) => a+f.size, 0);
+    const outTotal = done.reduce((a,f) => a+f.outputSize, 0);
+    const savedPct = Math.round((1 - outTotal/inTotal) * 100);
+    dom.totals.innerHTML = `${done.length} done · <b>${Utils.formatBytes(inTotal)}</b> → <b>${Utils.formatBytes(outTotal)}</b> (${savedPct>=0?'−':'+'}${Math.abs(savedPct)}%)`;
+    dom.btnZip.style.display = done.length > 1 ? 'inline-block' : 'none';
+  }
+
+  function warmEngine(){
+    if(warmupStarted) return;
+    warmupStarted = true;
+    setEngineState('loading');
+    FFmpegEngine.initEngine()
+      .then(() => { setEngineState('ready'); refreshForgeButton(); })
+      .catch((err) => { console.error(err); setEngineState('failed'); });
+  }
+  function setEngineState(state){
+    dom.engineDot.classList.remove('ready','busy');
+    if(state === 'loading'){
+      dom.engineLabel.textContent = 'Loading engine…';
+      dom.loadOverlay.classList.remove('hidden');
+    } else if(state === 'ready'){
+      dom.engineLabel.textContent = 'Engine ready';
+      dom.engineDot.classList.add('ready');
+      dom.loadOverlay.classList.add('hidden');
+    } else if(state === 'failed'){
+      dom.engineLabel.textContent = 'Engine failed to load';
+      dom.overlayMsg.textContent = "The forge couldn't ignite.";
+      dom.overlaySub.textContent = 'Your browser blocked the encoding engine from loading. Check your connection, try Chrome or Edge on desktop, then reload the page.';
+    } else if(state === 'idle'){
+      dom.engineLabel.textContent = 'Engine idle — drop a file to begin';
+    }
+  }
+
+  function bindActions(){
+    dom.btnForge.addEventListener('click', runQueue);
+    dom.btnClear.addEventListener('click', () => {
+      if(isProcessing) return;
+      UploadManager.clear(); renderQueue(); refreshForgeButton();
+    });
+    dom.btnZip.addEventListener('click', async () => {
+      dom.btnZip.disabled = true; dom.btnZip.textContent = 'Zipping…';
+      try{ await DownloadManager.downloadAllAsZip(UploadManager.getAll().filter(f => f.status === 'done')); }
+      catch(e){ alert("Couldn't build the zip — try downloading files individually instead."); }
+      finally{ dom.btnZip.disabled = false; dom.btnZip.textContent = '⬇ Download all (.zip)'; }
+    });
+  }
+
+  async function runQueue(){
+    if(isProcessing) return;
+    warmEngine();
+    if(!FFmpegEngine.isReady()){
+      await FFmpegEngine.initEngine().catch(() => {});
+      if(!FFmpegEngine.isReady()) return;
+      setEngineState('ready');
+    }
+    const pending = UploadManager.getAll().filter(f => f.status === 'queued');
+    if(!pending.length) return;
+
+    isProcessing = true; refreshForgeButton();
+    for(const rec of pending){
+      if(!UploadManager.getById(rec.id)) continue;
+      await runSingleJob(rec.id);
+    }
+    isProcessing = false; refreshForgeButton();
+  }
+
+  async function runSingleJob(id){
+    const rec = UploadManager.getById(id);
+    if(!rec) return;
+    const profile = CompressionProfiles[selectedProfileKey];
+    patchFileRow(id, { status:'working', stage:'Encoding', progress:0, eta:null, speed:null });
+    try{
+      const { blob, encodeDurationSec } = await CompressionController.runJob({
+        record: rec, profile, overrides,
+        onProgressUpdate: (partial) => {
+          const patch = {};
+          if(partial.progress !== undefined) patch.progress = partial.progress;
+          if(partial.eta !== undefined) patch.eta = partial.eta;
+          if(partial.speed !== undefined) patch.speed = partial.speed;
+          if(Object.keys(patch).length) patchFileRow(id, patch);
+        }
+      });
+      const outputName = DownloadManager.buildOutputName(rec.name, selectedProfileKey);
+      const outputUrl = URL.createObjectURL(blob);
+      patchFileRow(id, { status:'done', progress:1, stage:'Complete', outputBlob:blob, outputSize:blob.size, outputUrl, outputName, encodeDurationSec });
+    }catch(err){
+      patchFileRow(id, { status:'error', error: Utils.humanizeError(err && err.message), progress:0 });
+    }
+  }
+
+  function refreshForgeButton(){
+    const hasQueued = UploadManager.getAll().some(f => f.status === 'queued');
+    dom.btnForge.disabled = !hasQueued || isProcessing;
+    dom.btnForge.textContent = isProcessing ? '🔥 Forging…' : '🔥 Forge It';
+    dom.engineDot.classList.toggle('busy', isProcessing);
+  }
+
+  function init(){
+    cacheDom();
+    setEngineState('idle');
+    renderPresets();
+    syncAdvancedPanel();
+    bindAdvancedPanel();
+    bindUpload();
+    bindActions();
+    renderQueue();
+    refreshForgeButton();
+  }
+  return { init };
+})();
+
+/* =============================================================================
+   BOOTSTRAP
+   ============================================================================= */
+UI.init();
+</script>
+</body>
+</html>
